@@ -128,8 +128,8 @@ export default function Home() {
                 <div className="bg-gradient-to-b from-red-800/20 to-red-900/20 p-6 rounded-lg border border-red-500/20">
                   <h4 className="font-semibold mb-3 text-red-300">State vs UTXO Models</h4>
                   <p className="text-gray-300 text-sm mb-3">
-                    Ethereum's account-based state requires global consensus on every state transition. 
-                    Bitcoin's UTXO model enables parallel validation of independent transactions.
+                    Ethereum&apos;s account-based state requires global consensus on every state transition. 
+                    Bitcoin&apos;s UTXO model enables parallel validation of independent transactions.
                   </p>
                   <div className="text-xs text-gray-400">
                     <p><strong>Question:</strong> Could hybrid models combine the benefits of both approaches?</p>
@@ -140,10 +140,10 @@ export default function Home() {
                   <h4 className="font-semibold mb-3 text-purple-300">Consensus Mechanisms</h4>
                   <p className="text-gray-300 text-sm mb-3">
                     PoS optimizes for finality and energy efficiency. PoW optimizes for censorship resistance and proven security. 
-                    Neither approach has definitively "won" the technical debate.
+                    Neither approach has definitively &quot;won&quot; the technical debate.
                   </p>
                   <div className="text-xs text-gray-400">
-                    <p><strong>Question:</strong> Are there consensus mechanisms we haven't discovered yet?</p>
+                    <p><strong>Question:</strong> Are there consensus mechanisms we haven&apos;t discovered yet?</p>
                   </div>
                 </div>
                 
@@ -347,7 +347,7 @@ export default function Home() {
 
       {/* Theoretical Scenarios */}
       <section id="scenarios" className="container mx-auto px-6 py-16">
-        <h2 className="text-4xl font-bold mb-12 text-center text-purple-400">Theoretical Scenarios & "What If" Analysis</h2>
+        <h2 className="text-4xl font-bold mb-12 text-center text-purple-400">Theoretical Scenarios &amp; &quot;What If&quot; Analysis</h2>
         <div className="max-w-6xl mx-auto space-y-12">
           
           {/* Scenario 1 */}
