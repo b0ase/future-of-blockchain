@@ -1,17 +1,36 @@
+
 'use client'
 
 import React, { useRef } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { OrbitControls, Text } from '@react-three/drei'
+import { OrbitControls, Text, Line } from '@react-three/drei'
 import * as THREE from 'three'
+import type { OrbitControls as OrbitControlsType } from 'three-stdlib'
 
 
-function MiningPoolPieChart() {
+
+function MiningPoolPieChart({ viewMode }: { viewMode: string }) {
   const chartRef = useRef<THREE.Group>(null!)
   const mainGroupRef = useRef<THREE.Group>(null!)
 
+  // BSV Node implementations - Actual BSV ecosystem
+  const bsvNodes = [
+    { name: 'TAAL', percentage: 25.0, color: '#FF0000' },           // Red - Major BSV miner
+    { name: 'GorillaPool', percentage: 20.0, color: '#FF3300' },    // Red-Orange
+    { name: 'SVPool', percentage: 15.0, color: '#FF6600' },         // Orange
+    { name: 'WhatsOnChain', percentage: 8.0, color: '#FF9900' },    // Orange-Yellow - Node service
+    { name: 'ViaBTC BSV', percentage: 7.0, color: '#FFCC00' },      // Yellow-Orange
+    { name: 'Mempool', percentage: 5.0, color: '#FFFF00' },         // Yellow
+    { name: 'MARAPool', percentage: 4.5, color: '#CCFF00' },        // Yellow-Green
+    { name: 'SBI Mining', percentage: 3.5, color: '#99FF00' },      // Light Green
+    { name: 'Unknown', percentage: 3.0, color: '#66FF00' },         // Green
+    { name: 'Solo Miners', percentage: 2.5, color: '#33FF00' },     // Green
+    { name: 'BSV Pool', percentage: 2.0, color: '#00FF00' },        // Pure Green
+    { name: 'Other Nodes', percentage: 4.5, color: '#00FF33' }      // Green-Cyan
+  ]
+
   // BTC Mining Pool data - Rainbow gradient palette
-  const miningPools = [
+  const btcPools = [
     { name: 'AntPool', percentage: 18.5, color: '#FF0000' },        // Red
     { name: 'Poolin', percentage: 15.2, color: '#FF3300' },         // Red-Orange
     { name: 'BTC.com', percentage: 12.8, color: '#FF6600' },        // Orange
@@ -35,6 +54,9 @@ function MiningPoolPieChart() {
     { name: 'HashNest', percentage: 0.5, color: '#0000FF' },        // Pure Blue
     { name: 'Tiny Pools', percentage: 1.4, color: '#3300FF' }       // Blue-Violet
   ]
+
+  // Use BSV nodes for 'single' view, BTC pools for 'multi' view
+  const miningPools = viewMode === 'single' ? bsvNodes : btcPools
 
   useFrame((state) => {
     // Gently rotate the entire visualization
@@ -130,7 +152,7 @@ function MiningPoolPieChart() {
             anchorX="center"
             anchorY="middle"
           >
-            BTC Mining Pools
+            {viewMode === 'single' ? 'BSV Node Network' : 'BTC Mining Pools'}
           </Text>
         </group>
 
@@ -249,6 +271,116 @@ function MiningPoolPieChart() {
   )
 }
 
+function MeshNetwork() {
+  const txRef = useRef<THREE.Mesh>(null)
+  
+  // Define the two specific node positions from the grid
+  const gridSize = 25
+  const spacing = 5
+  const extent = (gridSize - 1) * spacing / 2
+  
+  // Pick two specific grid positions for our transaction nodes
+  const node1Pos: [number, number, number] = [-extent + 5 * spacing, 0, -extent + 8 * spacing] // Grid position [5, 8]
+  const node2Pos: [number, number, number] = [-extent + 18 * spacing, 0, -extent + 16 * spacing] // Grid position [18, 16]
+  
+  // Animate transaction pulse along the line
+  useFrame((state) => {
+    if (txRef.current) {
+      // Calculate position along the line based on time
+      const t = (Math.sin(state.clock.elapsedTime * 2) + 1) / 2 // Oscillates between 0 and 1
+      
+      // Interpolate position between the two nodes
+      txRef.current.position.x = node1Pos[0] + (node2Pos[0] - node1Pos[0]) * t
+      txRef.current.position.y = node1Pos[1] + (node2Pos[1] - node1Pos[1]) * t
+      txRef.current.position.z = node1Pos[2] + (node2Pos[2] - node1Pos[2]) * t
+      
+      // Pulse the size
+      const scale = 0.3 + Math.sin(state.clock.elapsedTime * 8) * 0.1
+      txRef.current.scale.set(scale, scale, scale)
+    }
+  })
+  
+  return (
+    <group position={[0, -24.5, 0]}> {/* Position just above the pie chart */}
+      
+      {/* Create a simple mesh network grid */}
+      {(() => {
+        const lines = [];
+        const nodes = [];
+        const gridSize = 25; // Larger grid
+        const spacing = 5; // Larger spacing
+        const extent = (gridSize - 1) * spacing / 2; // Half the total grid size
+        
+        // Create horizontal lines
+        for (let i = 0; i < gridSize; i++) {
+          const z = -extent + i * spacing;
+          const points = [];
+          for (let j = 0; j < gridSize; j++) {
+            const x = -extent + j * spacing;
+            points.push(new THREE.Vector3(x, 0, z));
+          }
+          const geometry = new THREE.BufferGeometry().setFromPoints(points);
+          lines.push(
+            <line key={`h-line-${i}`}>
+              <primitive object={geometry} />
+              <lineBasicMaterial color="#000000" opacity={0.8} transparent />
+            </line>
+          );
+        }
+        
+        // Create vertical lines
+        for (let i = 0; i < gridSize; i++) {
+          const x = -extent + i * spacing;
+          const points = [];
+          for (let j = 0; j < gridSize; j++) {
+            const z = -extent + j * spacing;
+            points.push(new THREE.Vector3(x, 0, z));
+          }
+          const geometry = new THREE.BufferGeometry().setFromPoints(points);
+          lines.push(
+            <line key={`v-line-${i}`}>
+              <primitive object={geometry} />
+              <lineBasicMaterial color="#000000" opacity={0.8} transparent />
+            </line>
+          );
+        }
+        
+        // Create nodes at intersections
+        for (let i = 0; i < gridSize; i++) {
+          for (let j = 0; j < gridSize; j++) {
+            const x = -extent + i * spacing;
+            const z = -extent + j * spacing;
+            // Make two specific nodes white for transaction visualization
+            const isSpecialNode = (i === 5 && j === 8) || (i === 18 && j === 16);
+            nodes.push(
+              <mesh key={`node-${i}-${j}`} position={[x, 0, z]}>
+                <sphereGeometry args={[isSpecialNode ? 0.5 : 0.2, 8, 8]} />
+                <meshBasicMaterial color={isSpecialNode ? "#ffffff" : "#000000"} />
+              </mesh>
+            );
+          }
+        }
+        
+        return [...lines, ...nodes];
+      })()}
+      
+      {/* Transaction line between the two white nodes */}
+      <Line
+        points={[node1Pos, node2Pos]}
+        color="#00ff00"
+        lineWidth={2}
+        dashed={false}
+      />
+      
+      {/* Animated transaction pulse */}
+      <mesh ref={txRef}>
+        <sphereGeometry args={[0.4, 16, 16]} />
+        <meshStandardMaterial color="#ffff00" emissive="#ffff00" emissiveIntensity={0.5} />
+      </mesh>
+    </group>
+  );
+}
+
 function MultiChainBlocks() {
   return (
     <group>
@@ -256,7 +388,7 @@ function MultiChainBlocks() {
       {(() => {
         const chains = [];
         const numChains = 50;
-        const blockSize = 0.4; // Much smaller block size
+        const blockSize = 0.6; // Bigger block size for visibility
         const blocksPerChain = 30; // Reduced back to shorter chains
         const gap = 0.3; // Slightly bigger gap for more spread
         
@@ -278,16 +410,23 @@ function MultiChainBlocks() {
             const colorProgress = blockIndex / (blocksPerChain - 1);
             
             chain.push(
-              <mesh key={`block-${blockIndex}`} position={[x, y, z]}>
-                <boxGeometry args={[blockSize, blockSize, blockSize]} />
-                <meshStandardMaterial
-                  color={`hsl(${240 - (colorProgress * 240)}, 90%, 60%)`}
-                  emissive={`hsl(${240 - (colorProgress * 240)}, 90%, 40%)`}
-                  emissiveIntensity={0.5 + colorProgress * 0.5}
-                  metalness={0.3}
-                  roughness={0.2}
-                />
-              </mesh>
+              <group key={`block-${blockIndex}`}>
+                <mesh position={[x, y, z]}>
+                  <boxGeometry args={[blockSize, blockSize, blockSize]} />
+                  <meshBasicMaterial
+                    color={`hsl(${240 - (colorProgress * 240)}, 100%, 60%)`}
+                  />
+                </mesh>
+                {/* Glow effect */}
+                <mesh position={[x, y, z]}>
+                  <boxGeometry args={[blockSize * 1.1, blockSize * 1.1, blockSize * 1.1]} />
+                  <meshBasicMaterial
+                    color={`hsl(${240 - (colorProgress * 240)}, 100%, 70%)`}
+                    transparent
+                    opacity={0.3}
+                  />
+                </mesh>
+              </group>
             );
           }
           
@@ -304,27 +443,28 @@ function MultiChainBlocks() {
   );
 }
 
-function BlockchainBlocks() {
+function BlockchainBlocks({ viewMode }: { viewMode: string }) {
   return (
     <group>
-      {/* ONE CHAIN of blocks - getting bigger every 10 minutes! */}
+      {/* ONE CHAIN of blocks - BTC: all 1MB, BSV: getting bigger every 10 minutes! */}
       {(() => {
         const blocks = [];
-        const totalBlocks = 100; // 100 blocks up to 2GB
-        const maxSize = 2000; // 2GB max
+        const totalBlocks = 100; // 100 blocks
+        const maxSize = viewMode === 'multi' ? 1 : 2000; // BTC: 1MB max, BSV: 2GB max
 
         for (let i = 0; i < totalBlocks; i++) {
           const progress = i / (totalBlocks - 1);
-          const blockNumber = i + 1;
           
-          // Exponential growth to reach 2GB
-          const size = Math.round(1 + (maxSize - 1) * Math.pow(progress, 2));
+          // BTC: constant 1MB, BSV: exponential growth to reach 2GB
+          const size = viewMode === 'multi' 
+            ? 1 // BTC always 1MB
+            : Math.round(1 + (maxSize - 1) * Math.pow(progress, 2));
 
-          // Skip blocks above 250MB
-          if (size > 250) continue;
+          // Skip blocks above 250MB for BSV
+          if (viewMode !== 'multi' && size > 250) continue;
 
           // Linear proportional scaling - blocks are directly proportional to their size
-          const baseScale = 0.01; // Scale for 2GB view
+          const baseScale = viewMode === 'multi' ? 1 : 0.01; // BTC: full size for 1MB, BSV: scale for larger sizes
           const visualScale = size * baseScale;
           const clampedScale = Math.max(0.5, Math.min(20.0, visualScale));
 
@@ -432,7 +572,6 @@ function BlockchainBlocks() {
         const totalBlocks = 100;
         const maxSize = 2000;
         const baseScale = 0.01;
-        let lastBlockSize = 0;
         
         for (let i = 0; i < totalBlocks; i++) {
           const progress = i / (totalBlocks - 1);
@@ -440,8 +579,6 @@ function BlockchainBlocks() {
           
           // Stop at 250MB
           if (size > 250) break;
-          
-          lastBlockSize = size;
           const visualScale = size * baseScale;
           const clampedScale = Math.max(0.5, Math.min(20.0, visualScale));
           totalHeight += clampedScale + gap;
@@ -449,13 +586,14 @@ function BlockchainBlocks() {
 
         return (
           <Text
-            position={[0, totalHeight + 3, 0]}
-            fontSize={1.5}
+            position={[15, totalHeight / 2, 0]}  // Position to the right, at mid-height
+            fontSize={2}
             color="#ff4444"
-            anchorX="center"
+            anchorX="left"
             anchorY="middle"
+            rotation={[0, 0, 0]}  // Keep text facing forward
           >
-            250MB BLOCKS
+            {viewMode === 'multi' ? '1MB BLOCKS' : '250MB BLOCKS'}
           </Text>
         );
       })()}
@@ -464,8 +602,8 @@ function BlockchainBlocks() {
 }
 
 export default function BlockchainVisualizer() {
-  const controlsRef = useRef<any>(null)
-  const [viewMode, setViewMode] = React.useState<'single' | 'multi'>('single')
+  const controlsRef = useRef<OrbitControlsType | null>(null)
+  const [viewMode, setViewMode] = React.useState<'single' | 'multi' | 'play'>('single')
 
   const resetView = () => {
     if (controlsRef.current) {
@@ -486,8 +624,16 @@ export default function BlockchainVisualizer() {
           gl.domElement.tabIndex = -1;
         }}
       >
-        <MiningPoolPieChart />
-        {viewMode === 'single' ? <BlockchainBlocks /> : <MultiChainBlocks />}
+        <MiningPoolPieChart viewMode={viewMode} />
+        {viewMode === 'single' && <BlockchainBlocks viewMode={viewMode} />}
+        {viewMode === 'multi' && <BlockchainBlocks viewMode={viewMode} />}
+        {viewMode === 'play' && (
+          <>
+            <BlockchainBlocks viewMode={viewMode} />
+            <MultiChainBlocks />
+            <MeshNetwork />
+          </>
+        )}
         <OrbitControls
           ref={controlsRef}
           enableDamping
@@ -512,7 +658,7 @@ export default function BlockchainVisualizer() {
       {/* FULL LEFT SIDE Mining Pool Information Panel */}
       <div className="absolute top-0 left-0 w-96 h-full bg-black/95 backdrop-blur-md p-4 text-white font-mono text-xs border-r border-blue-500/30 overflow-y-auto">
         <h3 className="text-blue-400 font-bold mb-3 flex items-center gap-2 text-sm">
-          ⛏️ BTC MINING POOLS
+          ⛏️ {viewMode === 'single' ? 'BSV NODE NETWORK' : 'BTC MINING POOLS'}
         </h3>
 
         {/* Total Hash Rate */}
@@ -677,6 +823,17 @@ export default function BlockchainVisualizer() {
           title="Bitcoin Core - Limited blocks"
         >
           🔗 BTC
+        </button>
+        <button
+          onClick={() => setViewMode('play')}
+          className={`px-3 py-2 rounded text-[#00ff88] font-mono text-xs border transition-all cursor-pointer ${
+            viewMode === 'play' 
+              ? 'bg-[#00ff88]/30 border-[#00ff88]/50' 
+              : 'border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50'
+          }`}
+          title="Interactive playground"
+        >
+          🎮 Play
         </button>
       </div>
 
