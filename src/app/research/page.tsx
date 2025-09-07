@@ -1,16 +1,28 @@
 import React from 'react';
+import Image from 'next/image';
 
 export default function ResearchPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-white">
+    <div className="min-h-screen text-slate-900">
       <div className="container mx-auto px-6 py-16">
         
         {/* Header */}
-        <div className="text-center mb-16">
-          <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+        <div className="text-center mb-16 relative overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+          <div className="relative h-64 w-full">
+            <Image
+              src="https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?q=80&w=2400&auto=format&fit=crop"
+              alt="Futuristic city skyline with data overlays"
+              fill
+              sizes="100vw"
+              className="object-cover object-center opacity-35"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-white via-white/60 to-transparent" />
+          </div>
+          <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             Advanced Research Analysis
           </h1>
-          <p className="text-xl text-gray-300 max-w-4xl mx-auto">
+          <p className="text-xl text-slate-700 max-w-4xl mx-auto">
             Deep-dive research into blockchain architectural evolution, economic models, and convergence scenarios.
           </p>
         </div>
@@ -20,29 +32,47 @@ export default function ResearchPage() {
           <h2 className="text-3xl font-bold mb-8 text-blue-400">Historical Precedents for Technology Convergence</h2>
           
           <div className="grid md:grid-cols-2 gap-8 mb-8">
-            <div className="bg-gradient-to-b from-blue-800/20 to-blue-900/20 p-6 rounded-lg border border-blue-500/20">
-              <h3 className="text-xl font-semibold mb-4 text-blue-300">The Internet Protocol Wars</h3>
-              <div className="space-y-3 text-gray-300 text-sm">
+            <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+              <div className="mb-4 relative h-36 w-full overflow-hidden rounded-md">
+                <Image
+                  src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?q=80&w=1400&auto=format&fit=crop"
+                  alt="Network cables and servers representing internet infrastructure"
+                  fill
+                  sizes="(min-width: 768px) 50vw, 100vw"
+                  className="object-cover object-center opacity-60"
+                />
+              </div>
+              <h3 className="text-xl font-semibold mb-4 text-blue-700">The Internet Protocol Wars</h3>
+              <div className="space-y-3 text-slate-700 text-sm">
                 <p><strong>1970s-1990s:</strong> Multiple networking protocols competed (TCP/IP, OSI, IPX, AppleTalk)</p>
                 <p><strong>Winner:</strong> TCP/IP emerged as the commodity layer despite being "technically inferior" to OSI</p>
                 <p><strong>Key Factors:</strong> Simplicity, openness, government backing, network effects</p>
                 <p><strong>Outcome:</strong> All other protocols either disappeared or became applications on TCP/IP</p>
               </div>
-              <div className="mt-4 p-3 bg-cyan-900/20 rounded">
-                <p className="text-cyan-300 text-xs"><strong>Parallel:</strong> Could BSV become the TCP/IP of blockchain while Ethereum/Solana become applications?</p>
+              <div className="mt-4 p-3 bg-cyan-50 border border-cyan-200 rounded">
+                <p className="text-cyan-700 text-xs"><strong>Parallel:</strong> Could BSV become the TCP/IP of blockchain while Ethereum/Solana become applications?</p>
               </div>
             </div>
             
-            <div className="bg-gradient-to-b from-green-800/20 to-green-900/20 p-6 rounded-lg border border-green-500/20">
-              <h3 className="text-xl font-semibold mb-4 text-green-300">The Database Wars</h3>
-              <div className="space-y-3 text-gray-300 text-sm">
+            <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+              <div className="mb-4 relative h-36 w-full overflow-hidden rounded-md">
+                <Image
+                  src="https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=1400&auto=format&fit=crop"
+                  alt="Code and database schematics on screens"
+                  fill
+                  sizes="(min-width: 768px) 50vw, 100vw"
+                  className="object-cover object-center opacity-60"
+                />
+              </div>
+              <h3 className="text-xl font-semibold mb-4 text-green-700">The Database Wars</h3>
+              <div className="space-y-3 text-slate-700 text-sm">
                 <p><strong>1970s-1980s:</strong> Hierarchical, Network, and Relational models competed</p>
                 <p><strong>Winner:</strong> Relational databases (SQL) dominated despite performance trade-offs</p>
                 <p><strong>Key Factors:</strong> Mathematical foundation, query flexibility, standardization</p>
                 <p><strong>Modern Era:</strong> NoSQL emerged for specific use cases but SQL remains dominant</p>
               </div>
-              <div className="mt-4 p-3 bg-orange-900/20 rounded">
-                <p className="text-orange-300 text-xs"><strong>Question:</strong> Are we seeing specialized blockchain emergence (DeFi, gaming, storage) or true convergence?</p>
+              <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded">
+                <p className="text-orange-700 text-xs"><strong>Question:</strong> Are we seeing specialized blockchain emergence (DeFi, gaming, storage) or true convergence?</p>
               </div>
             </div>
           </div>
