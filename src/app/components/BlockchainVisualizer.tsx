@@ -593,7 +593,7 @@ function BlockchainBlocks({ viewMode }: { viewMode: string }) {
             anchorY="middle"
             rotation={[0, 0, 0]}  // Keep text facing forward
           >
-            {viewMode === 'multi' ? '1MB BLOCKS' : '250MB BLOCKS'}
+            {viewMode === 'multi' ? '1MB BLOCKS' : 'Variable Blocksize'}
           </Text>
         );
       })()}
@@ -831,9 +831,9 @@ export default function BlockchainVisualizer() {
               ? 'bg-[#00ff88]/30 border-[#00ff88]/50' 
               : 'border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50'
           }`}
-          title="Interactive playground"
+          title="Fantasy view"
         >
-          🎮 Play
+          🎮 Fantasy
         </button>
       </div>
 
