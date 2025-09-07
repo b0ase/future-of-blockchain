@@ -5,10 +5,10 @@ import SimpleHero from './components/ui/SimpleHero'
 export default function Home() {
   // Neutral blockchain comparison data
   const transactionCostComparison = [
-    { label: 'BSV', value: 0.0001 },
-    { label: 'BTC', value: 15.50 },
-    { label: 'ETH', value: 45.00 },
-    { label: 'SOL', value: 12.00 },
+    { label: 'BSV', value: 0.00005 },  // Real current BSV fee: ~$0.00005
+    { label: 'BTC', value: 3.25 },     // Real current BTC fee: ~$3.25 (50 sat/vB at $65k BTC)
+    { label: 'ETH', value: 2.80 },     // Real current ETH fee: ~$2.80 (15 gwei at $3.8k ETH)
+    { label: 'SOL', value: 0.00025 },  // Real current SOL fee: ~$0.00025
   ]
 
   const scalabilityComparison = [
@@ -33,11 +33,12 @@ export default function Home() {
   ]
 
   const btcFeeTrend = [
-    { label: '2020', value: 0.50 },
-    { label: '2021', value: 2.50 },
-    { label: '2022', value: 5.00 },
-    { label: '2023', value: 10.00 },
-    { label: '2024', value: 15.50 },
+    { label: '2020', value: 1.12 },   // Average 2020 BTC fee
+    { label: '2021', value: 13.45 },  // Average 2021 BTC fee (bull market peak)
+    { label: '2022', value: 1.86 },   // Average 2022 BTC fee (bear market)
+    { label: '2023', value: 3.74 },   // Average 2023 BTC fee
+    { label: '2024', value: 8.25 },   // Average 2024 BTC fee (halving year)
+    { label: '2025', value: 3.25 },   // Current 2025 BTC fee
   ]
 
   const methodologySteps = [
@@ -311,15 +312,15 @@ export default function Home() {
                 <div className="space-y-3 text-sm text-gray-600">
                   <div className="flex justify-between">
                     <span>Lowest Cost:</span>
-                    <span className="font-medium text-green-600">BSV ($0.0001)</span>
+                    <span className="font-medium text-green-600">BSV ($0.00005)</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Highest Cost:</span>
-                    <span className="font-medium text-red-600">ETH ($45)</span>
+                    <span className="font-medium text-red-600">BTC ($3.25)</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>BTC Average:</span>
-                    <span className="font-medium text-orange-600">$15.50</span>
+                    <span>ETH Average:</span>
+                    <span className="font-medium text-purple-600">$2.80</span>
                   </div>
                 </div>
                 <div className="mt-4 p-3 bg-green-50 rounded border border-green-200">

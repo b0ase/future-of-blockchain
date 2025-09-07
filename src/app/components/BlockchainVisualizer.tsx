@@ -48,11 +48,6 @@ function MiningPoolPieChart() {
     }
   })
 
-  // Create perpendicular line from pie chart center
-  const linePoints = [
-    new THREE.Vector3(0, 0, 0),     // Pie chart center
-    new THREE.Vector3(0, 0, 10)     // Straight up in Z direction
-  ]
 
   return (
     <group ref={mainGroupRef}>
@@ -254,6 +249,61 @@ function MiningPoolPieChart() {
   )
 }
 
+function MultiChainBlocks() {
+  return (
+    <group>
+      {/* 50 mini chains starting from center and splaying outward */}
+      {(() => {
+        const chains = [];
+        const numChains = 50;
+        const blockSize = 0.4; // Much smaller block size
+        const blocksPerChain = 30; // Reduced back to shorter chains
+        const gap = 0.3; // Slightly bigger gap for more spread
+        
+        for (let chainIndex = 0; chainIndex < numChains; chainIndex++) {
+          // Each chain starts at center and goes outward at an angle
+          const angle = (chainIndex / numChains) * Math.PI * 2;
+          const baseY = -23; // Start just above pie chart
+          
+          // Create a chain of blocks going outward and upward from center
+          const chain = [];
+          for (let blockIndex = 0; blockIndex < blocksPerChain; blockIndex++) {
+            // Start from center (0,0) and move outward - faster spread
+            const distance = blockIndex * (blockSize + gap) * 1.5; // 1.5x multiplier for wider spread
+            const x = Math.cos(angle) * distance;
+            const z = Math.sin(angle) * distance;
+            const y = baseY + (blockIndex * 0.8); // Much steeper upward angle
+            
+            // Color based on distance from center - rainbow gradient
+            const colorProgress = blockIndex / (blocksPerChain - 1);
+            
+            chain.push(
+              <mesh key={`block-${blockIndex}`} position={[x, y, z]}>
+                <boxGeometry args={[blockSize, blockSize, blockSize]} />
+                <meshStandardMaterial
+                  color={`hsl(${240 - (colorProgress * 240)}, 90%, 60%)`}
+                  emissive={`hsl(${240 - (colorProgress * 240)}, 90%, 40%)`}
+                  emissiveIntensity={0.5 + colorProgress * 0.5}
+                  metalness={0.3}
+                  roughness={0.2}
+                />
+              </mesh>
+            );
+          }
+          
+          chains.push(
+            <group key={`chain-${chainIndex}`}>
+              {chain}
+            </group>
+          );
+        }
+        
+        return chains;
+      })()}
+    </group>
+  );
+}
+
 function BlockchainBlocks() {
   return (
     <group>
@@ -415,6 +465,7 @@ function BlockchainBlocks() {
 
 export default function BlockchainVisualizer() {
   const controlsRef = useRef<any>(null)
+  const [viewMode, setViewMode] = React.useState<'single' | 'multi'>('single')
 
   const resetView = () => {
     if (controlsRef.current) {
@@ -436,7 +487,7 @@ export default function BlockchainVisualizer() {
         }}
       >
         <MiningPoolPieChart />
-        <BlockchainBlocks />
+        {viewMode === 'single' ? <BlockchainBlocks /> : <MultiChainBlocks />}
         <OrbitControls
           ref={controlsRef}
           enableDamping
@@ -601,6 +652,32 @@ export default function BlockchainVisualizer() {
           </div>
         </div>
 
+      </div>
+
+      {/* View Mode Toggle - Top Center */}
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/90 backdrop-blur-md p-2 rounded-lg border border-[#00ff88]/30 flex gap-2">
+        <button
+          onClick={() => setViewMode('single')}
+          className={`px-3 py-2 rounded text-[#00ff88] font-mono text-xs border transition-all cursor-pointer ${
+            viewMode === 'single' 
+              ? 'bg-[#00ff88]/30 border-[#00ff88]/50' 
+              : 'border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50'
+          }`}
+          title="Bitcoin SV - Unbounded blocks"
+        >
+          ⛓️ BSV
+        </button>
+        <button
+          onClick={() => setViewMode('multi')}
+          className={`px-3 py-2 rounded text-[#00ff88] font-mono text-xs border transition-all cursor-pointer ${
+            viewMode === 'multi' 
+              ? 'bg-[#00ff88]/30 border-[#00ff88]/50' 
+              : 'border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50'
+          }`}
+          title="Bitcoin Core - Limited blocks"
+        >
+          🔗 BTC
+        </button>
       </div>
 
       {/* Reset Button - Bottom Right */}
