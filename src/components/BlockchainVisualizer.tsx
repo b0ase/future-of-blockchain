@@ -1,3 +1,4 @@
+
 'use client'
 
 import React, { useRef } from 'react'
@@ -73,101 +74,102 @@ function MiningPoolPieChart({ viewMode }: { viewMode: string }) {
   return (
     <group ref={mainGroupRef}>
       {/* Earth hemisphere underneath everything */}
-      <group position={[0, -28, 0]}>
-        {/* Outer atmosphere glow */}
-        <mesh rotation={[Math.PI, 0, 0]}>
-          <sphereGeometry args={[38, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
-          <meshStandardMaterial 
-            color="#4A90E2"
-            opacity={0.15}
-            transparent
-            emissive="#4A90E2"
-            emissiveIntensity={0.1}
-            side={THREE.DoubleSide}
-          />
-        </mesh>
-        
-        {/* Main Earth hemisphere */}
-        <mesh rotation={[Math.PI, 0, 0]}>
-          <sphereGeometry args={[35, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
-          <meshStandardMaterial 
-            color="#1E3A8A"
-            emissive="#1E3A8A"
-            emissiveIntensity={0.05}
-            metalness={0.3}
-            roughness={0.7}
-          />
-        </mesh>
-        
-        
-        {/* Inner core glow */}
-        <mesh position={[0, 1, 0]}>
-          <cylinderGeometry args={[35, 35, 0.1, 64]} />
-          <meshBasicMaterial 
-            color="#FF6B00"
-            opacity={0.3}
-            transparent
-          />
-        </mesh>
-      </group>
-
-      <group ref={chartRef} position={[0, -25, 0]}>
-        {/* Generate outer pie slices - bigger and brighter, representing distributed nodes */}
-        {miningPools.map((pool, index) => {
-          const startAngle = miningPools.slice(0, index).reduce((sum, p) => sum + p.percentage, 0) / 100 * Math.PI * 2
-          const angle = (pool.percentage / 100) * Math.PI * 2
-
-          return (
-            <mesh key={`outer-${pool.name}`} position={[0, -0.15, 0]}>
-              <cylinderGeometry args={[34.5, 34.5, 0.12, 32, 1, false, startAngle, angle]} />
+          <group position={[0, -28, 0]}>
+            {/* Outer atmosphere glow */}
+            <mesh rotation={[Math.PI, 0, 0]}>
+              <sphereGeometry args={[38, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
+              <meshStandardMaterial 
+                color="#4A90E2"
+                opacity={0.15}
+                transparent
+                emissive="#4A90E2"
+                emissiveIntensity={0.1}
+                side={THREE.DoubleSide}
+              />
+            </mesh>
+            
+            {/* Main Earth hemisphere */}
+            <mesh rotation={[Math.PI, 0, 0]}>
+              <sphereGeometry args={[35, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
+              <meshStandardMaterial 
+                color="#1E3A8A"
+                emissive="#1E3A8A"
+                emissiveIntensity={0.05}
+                metalness={0.3}
+                roughness={0.7}
+              />
+            </mesh>
+            
+            
+            {/* Inner core glow */}
+            <mesh position={[0, 1, 0]}>
+              <cylinderGeometry args={[35, 35, 0.1, 64]} />
               <meshBasicMaterial 
-                color={pool.color} 
-                opacity={0.6}
+                color="#FF6B00"
+                opacity={0.3}
                 transparent
               />
             </mesh>
-          )
-        })}
+          </group>
 
-        {/* Generate inner pie slices - original */}
-        {miningPools.map((pool, index) => {
-          const startAngle = miningPools.slice(0, index).reduce((sum, p) => sum + p.percentage, 0) / 100 * Math.PI * 2
-          const angle = (pool.percentage / 100) * Math.PI * 2
+          <group ref={chartRef} position={[0, -25, 0]}>
+            {/* Generate outer pie slices - bigger and brighter, representing distributed nodes */}
+            {miningPools.map((pool, index) => {
+              const startAngle = miningPools.slice(0, index).reduce((sum, p) => sum + p.percentage, 0) / 100 * Math.PI * 2
+              const angle = (pool.percentage / 100) * Math.PI * 2
 
-          return (
-            <mesh key={pool.name} position={[0, 0.1, 0]}>
-              <cylinderGeometry args={[7, 7, 0.1, 32, 1, false, startAngle, angle]} />
-              <meshStandardMaterial color={pool.color} />
-            </mesh>
-          )
-        })}
+              return (
+                <mesh key={`outer-${pool.name}`} position={[0, -0.15, 0]}>
+                  <cylinderGeometry args={[34.5, 34.5, 0.12, 32, 1, false, startAngle, angle]} />
+                  <meshBasicMaterial 
+                    color={pool.color} 
+                    opacity={0.6}
+                    transparent
+                  />
+                </mesh>
+              )
+            })}
+
+            {/* Generate inner pie slices - original */}
+            {miningPools.map((pool, index) => {
+              const startAngle = miningPools.slice(0, index).reduce((sum, p) => sum + p.percentage, 0) / 100 * Math.PI * 2
+              const angle = (pool.percentage / 100) * Math.PI * 2
+
+              return (
+                <mesh key={pool.name} position={[0, 0.1, 0]}>
+                  <cylinderGeometry args={[7, 7, 0.1, 32, 1, false, startAngle, angle]} />
+                  <meshStandardMaterial color={pool.color} />
+                </mesh>
+              )
+            })}
 
 
-        {/* Title - moved to background */}
-        <group position={[0, 3, -1]}>
-          <Text
-            fontSize={0.3}
-            color="#666666"
-            anchorX="center"
-            anchorY="middle"
-          >
-            {viewMode === 'single' ? 'BSV Node Network' : 'BTC Mining Pools'}
-          </Text>
-        </group>
+            {/* Title - moved to background */}
+            <group position={[0, 3, -1]}>
+              <Text
+                fontSize={0.3}
+                color="#666666"
+                anchorX="center"
+                anchorY="middle"
+              >
+                {viewMode === 'single' ? 'BSV Node Network' : 'BTC Mining Pools'}
+              </Text>
+            </group>
 
-        {/* Subtitle with total - moved to background */}
-        <group position={[0, 2, -1]}>
-          <Text
-            fontSize={0.2}
-            color="#555555"
-            anchorX="center"
-            anchorY="middle"
-          >
-            Global Hash Rate Distribution
-          </Text>
-        </group>
+            {/* Subtitle with total - moved to background */}
+            <group position={[0, 2, -1]}>
+              <Text
+                fontSize={0.2}
+                color="#555555"
+                anchorX="center"
+                anchorY="middle"
+              >
+                Global Hash Rate Distribution
+              </Text>
+            </group>
+      </group>
 
-        {/* MINING POOL BALLS - Positioned above their pie slices */}
+      {/* MINING POOL BALLS - Positioned above their pie slices */}
         {(() => {
           return miningPools.map((pool, index) => {
             // Scale ball size proportionally to pie slice percentages - MAXIMUM DRAMATIC
@@ -265,7 +267,6 @@ function MiningPoolPieChart({ viewMode }: { viewMode: string }) {
           );
         });
         })()}
-      </group>
     </group>
   )
 }
@@ -795,16 +796,7 @@ export default function BlockchainVisualizer() {
         {viewMode === 'smallworld' && <SmallWorldMandala />}
         {viewMode === 'hash' && (
           <>
-            {/* Hash visualization components will go here */}
-            <Text
-              position={[0, 0, 0]}
-              fontSize={3}
-              color="#00ff88"
-              anchorX="center"
-              anchorY="middle"
-            >
-              Hash Visualization
-            </Text>
+            {/* Clean slate - Hash visualization will go here */}
           </>
         )}
         <OrbitControls
