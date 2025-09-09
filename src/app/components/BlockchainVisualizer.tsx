@@ -1,33 +1,40 @@
 
 'use client'
 
-import React, { useRef } from 'react'
+import React, { useRef, useEffect, useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls, Text, Line } from '@react-three/drei'
 import * as THREE from 'three'
 import type { OrbitControls as OrbitControlsType } from 'three-stdlib'
+import { getBSVMiningPools, fallbackBSVPools, type MiningPool } from '@/lib/bsv-mining-api'
 
 
 
 function MiningPoolPieChart({ viewMode }: { viewMode: string }) {
   const chartRef = useRef<THREE.Group>(null!)
   const mainGroupRef = useRef<THREE.Group>(null!)
+  const [bsvPools, setBsvPools] = useState<MiningPool[]>(fallbackBSVPools)
+  const [isLoading, setIsLoading] = useState(false)
 
-  // BSV Node implementations - Actual BSV ecosystem
-  const bsvNodes = [
-    { name: 'TAAL', percentage: 25.0, color: '#FF0000' },           // Red - Major BSV miner
-    { name: 'GorillaPool', percentage: 20.0, color: '#FF3300' },    // Red-Orange
-    { name: 'SVPool', percentage: 15.0, color: '#FF6600' },         // Orange
-    { name: 'WhatsOnChain', percentage: 8.0, color: '#FF9900' },    // Orange-Yellow - Node service
-    { name: 'ViaBTC BSV', percentage: 7.0, color: '#FFCC00' },      // Yellow-Orange
-    { name: 'Mempool', percentage: 5.0, color: '#FFFF00' },         // Yellow
-    { name: 'MARAPool', percentage: 4.5, color: '#CCFF00' },        // Yellow-Green
-    { name: 'SBI Mining', percentage: 3.5, color: '#99FF00' },      // Light Green
-    { name: 'Unknown', percentage: 3.0, color: '#66FF00' },         // Green
-    { name: 'Solo Miners', percentage: 2.5, color: '#33FF00' },     // Green
-    { name: 'BSV Pool', percentage: 2.0, color: '#00FF00' },        // Pure Green
-    { name: 'Other Nodes', percentage: 4.5, color: '#00FF33' }      // Green-Cyan
-  ]
+  // Fetch real-time BSV mining pool data
+  useEffect(() => {
+    if (viewMode === 'single') {
+      setIsLoading(true)
+      getBSVMiningPools()
+        .then(pools => {
+          setBsvPools(pools)
+          console.log('BSV mining pools updated:', pools)
+        })
+        .catch(error => {
+          console.error('Failed to fetch BSV pools:', error)
+          setBsvPools(fallbackBSVPools)
+        })
+        .finally(() => setIsLoading(false))
+    }
+  }, [viewMode])
+
+  // Use dynamic BSV data or static BTC data
+  const bsvNodes = bsvPools
 
   // BTC Mining Pool data - Rainbow gradient palette
   const btcPools = [
@@ -175,24 +182,21 @@ function MiningPoolPieChart({ viewMode }: { viewMode: string }) {
             const minSize = 0.1; // Really small minimum ball size
             const maxSize = 3.0; // Reasonable maximum ball size
 
-            // SIMPLE EXACT SCALING: AntPool exactly 18x larger than Tiny Pools
+            // Dynamic scaling based on current pool data
+            const maxPercentage = Math.max(...miningPools.map(p => p.percentage));
+            const minPercentage = Math.min(...miningPools.map(p => p.percentage));
+            
             let ballSize;
-            if (pool.percentage === 18.5) {
-              // AntPool: maximum size
+            if (pool.percentage === maxPercentage) {
+              // Largest pool: maximum size
               ballSize = maxSize;
-            } else if (pool.percentage === 1.4) {
-              // Tiny Pools: exactly 18x smaller than AntPool
-              ballSize = maxSize / 18.0; // 3.0 / 18 = 0.167
+            } else if (pool.percentage === minPercentage) {
+              // Smallest pool: minimum size
+              ballSize = minSize;
             } else {
-              // Linear interpolation between AntPool (18.5%) and Tiny Pools (1.4%) extremes
-              const antPoolPercent = 18.5;
-              const tinyPoolsPercent = 1.4;
-              const antPoolSize = maxSize;
-              const tinyPoolsSize = maxSize / 18.0;
-
-              // Calculate position between the two extremes
-              const ratio = (pool.percentage - tinyPoolsPercent) / (antPoolPercent - tinyPoolsPercent);
-              ballSize = tinyPoolsSize + ratio * (antPoolSize - tinyPoolsSize);
+              // Linear interpolation between max and min
+              const ratio = (pool.percentage - minPercentage) / (maxPercentage - minPercentage);
+              ballSize = minSize + ratio * (maxSize - minSize);
               ballSize = Math.max(minSize, Math.min(maxSize, ballSize)); // Clamp
             }
 
@@ -204,7 +208,11 @@ function MiningPoolPieChart({ viewMode }: { viewMode: string }) {
             // Position in a ring above the pie chart - smaller pools closer to blockchain
             const radius = 8 + (12 * (1 - index / miningPools.length)); // Smallest pools closest (radius 8), largest furthest (radius 20)
             // Largest pools (lower index) get highest position
-            const height = 10 + (22 - index * 1.0); // Heights from 32 down to about 10
+            // Normalize height based on pool count to ensure consistent starting position
+            const maxHeight = 32;
+            const minHeight = 10;
+            const heightRange = maxHeight - minHeight;
+            const height = minHeight + (heightRange * (1 - index / Math.max(miningPools.length - 1, 1)))
             
             // The cylinderGeometry creates slices, but we need to reverse the direction
             // and rotate 180 degrees more (add PI)
@@ -604,6 +612,25 @@ function BlockchainBlocks({ viewMode }: { viewMode: string }) {
 export default function BlockchainVisualizer() {
   const controlsRef = useRef<OrbitControlsType | null>(null)
   const [viewMode, setViewMode] = React.useState<'single' | 'multi' | 'play'>('single')
+  const [bsvMiningPools, setBsvMiningPools] = useState<MiningPool[]>(fallbackBSVPools)
+  const [isLoadingPools, setIsLoadingPools] = useState(false)
+
+  // Fetch BSV mining pool data when component mounts or viewMode changes
+  useEffect(() => {
+    if (viewMode === 'single') {
+      setIsLoadingPools(true)
+      getBSVMiningPools()
+        .then(pools => {
+          setBsvMiningPools(pools)
+          console.log('BSV mining pools data loaded:', pools)
+        })
+        .catch(error => {
+          console.error('Error loading BSV pools:', error)
+          setBsvMiningPools(fallbackBSVPools)
+        })
+        .finally(() => setIsLoadingPools(false))
+    }
+  }, [viewMode])
 
   const resetView = () => {
     if (controlsRef.current) {
@@ -664,11 +691,59 @@ export default function BlockchainVisualizer() {
         {/* Total Hash Rate */}
         <div className="mb-3 p-2 bg-blue-900/30 rounded border border-blue-500/20">
           <div className="text-cyan-400 font-bold text-sm">🌐 TOTAL NETWORK</div>
-          <div className="text-yellow-400 text-lg font-bold">~680 EH/s</div>
+          <div className="text-yellow-400 text-lg font-bold">{viewMode === 'single' ? '~2.5 EH/s' : '~680 EH/s'}</div>
         </div>
 
         {/* All Pools - sized proportionally with harmonious colors */}
         <div className="space-y-1">
+          {viewMode === 'single' ? (
+            <>
+              {/* Dynamic BSV Pools */}
+              {isLoadingPools && (
+                <div className="text-center py-4 text-yellow-400">
+                  Loading real-time data...
+                </div>
+              )}
+              {bsvMiningPools.map((pool, index) => {
+                // Determine sizing based on percentage
+                const isLarge = pool.percentage > 30;
+                const isMedium = pool.percentage > 10;
+                const isSmall = pool.percentage < 3;
+                
+                const padding = isLarge ? 'p-3' : isMedium ? 'p-2.5' : isSmall ? 'p-1' : 'p-2';
+                const fontSize = isLarge ? 'text-lg' : isMedium ? 'text-base' : isSmall ? 'text-xs' : 'text-sm';
+                const borderWidth = isLarge ? '4px' : isMedium ? '4px' : isSmall ? '2px' : '3px';
+                
+                // Calculate estimated hash rate (2.5 EH/s total)
+                const hashrate = pool.percentage * 25; // 2500 PH/s total
+                const hashrateStr = hashrate > 1000 ? `~${(hashrate/1000).toFixed(1)} EH/s` : `~${Math.round(hashrate)} PH/s`;
+                
+                return (
+                  <div 
+                    key={pool.name}
+                    className={`${padding} rounded`} 
+                    style={{ 
+                      backgroundColor: `${pool.color}33`, // 20% opacity
+                      borderLeft: `${borderWidth} solid ${pool.color}` 
+                    }}
+                  >
+                    <div className="flex justify-between items-center">
+                      <span className={`font-bold ${fontSize}`} style={{ color: pool.color }}>
+                        {pool.name}
+                      </span>
+                      <span className={`text-white font-bold ${fontSize}`}>
+                        {pool.percentage.toFixed(1)}%
+                      </span>
+                    </div>
+                    {pool.percentage > 2 && (
+                      <div className="text-gray-300 text-xs">{hashrateStr}</div>
+                    )}
+                  </div>
+                );
+              })}
+            </>
+          ) : (
+            <>
           {/* AntPool - Largest */}
           <div className="p-3 rounded" style={{ backgroundColor: 'rgba(255, 0, 0, 0.2)', borderLeft: '4px solid #FF0000' }}>
             <div className="flex justify-between items-center">
@@ -796,6 +871,8 @@ export default function BlockchainVisualizer() {
               <span className="text-white text-xs">6.5%</span>
             </div>
           </div>
+            </>
+          )}
         </div>
 
       </div>

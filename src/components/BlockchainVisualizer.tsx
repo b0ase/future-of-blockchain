@@ -13,20 +13,20 @@ function MiningPoolPieChart({ viewMode }: { viewMode: string }) {
   const chartRef = useRef<THREE.Group>(null!)
   const mainGroupRef = useRef<THREE.Group>(null!)
 
-  // BSV Node implementations - Actual BSV ecosystem
+  // BSV Mining Pools - Actual BSV ecosystem mining distribution
   const bsvNodes = [
-    { name: 'TAAL', percentage: 25.0, color: '#FF0000' },           // Red - Major BSV miner
-    { name: 'GorillaPool', percentage: 20.0, color: '#FF3300' },    // Red-Orange
-    { name: 'SVPool', percentage: 15.0, color: '#FF6600' },         // Orange
-    { name: 'WhatsOnChain', percentage: 8.0, color: '#FF9900' },    // Orange-Yellow - Node service
-    { name: 'ViaBTC BSV', percentage: 7.0, color: '#FFCC00' },      // Yellow-Orange
-    { name: 'Mempool', percentage: 5.0, color: '#FFFF00' },         // Yellow
-    { name: 'MARAPool', percentage: 4.5, color: '#CCFF00' },        // Yellow-Green
-    { name: 'SBI Mining', percentage: 3.5, color: '#99FF00' },      // Light Green
-    { name: 'Unknown', percentage: 3.0, color: '#66FF00' },         // Green
-    { name: 'Solo Miners', percentage: 2.5, color: '#33FF00' },     // Green
-    { name: 'BSV Pool', percentage: 2.0, color: '#00FF00' },        // Pure Green
-    { name: 'Other Nodes', percentage: 4.5, color: '#00FF33' }      // Green-Cyan
+    { name: 'TAAL Mining', percentage: 28.5, color: '#FF0000' },     // Red - Largest BSV miner
+    { name: 'GorillaPool', percentage: 22.0, color: '#FF3300' },     // Red-Orange - Major BSV pool
+    { name: 'SVPool', percentage: 16.0, color: '#FF6600' },          // Orange - Chinese BSV pool
+    { name: 'ViaBTC BSV', percentage: 9.5, color: '#FF9900' },       // Orange-Yellow
+    { name: 'Mempool.com', percentage: 6.0, color: '#FFCC00' },      // Yellow-Orange - BSV mining
+    { name: 'MARAPool BSV', percentage: 4.5, color: '#FFFF00' },     // Yellow
+    { name: 'Unknown BSV', percentage: 3.5, color: '#CCFF00' },      // Yellow-Green
+    { name: 'SBI Crypto BSV', percentage: 3.0, color: '#99FF00' },   // Light Green
+    { name: 'BSVPool.com', percentage: 2.5, color: '#66FF00' },      // Green
+    { name: 'Solo Miners', percentage: 2.0, color: '#33FF00' },      // Green
+    { name: 'Sigmapool', percentage: 1.5, color: '#00FF00' },        // Pure Green
+    { name: 'Other Pools', percentage: 1.0, color: '#00FF33' }       // Green-Cyan
   ]
 
   // BTC Mining Pool data - Rainbow gradient palette
@@ -176,24 +176,21 @@ function MiningPoolPieChart({ viewMode }: { viewMode: string }) {
             const minSize = 0.1; // Really small minimum ball size
             const maxSize = 3.0; // Reasonable maximum ball size
 
-            // SIMPLE EXACT SCALING: AntPool exactly 18x larger than Tiny Pools
+            // Dynamic scaling based on current pool data
+            const maxPercentage = Math.max(...miningPools.map(p => p.percentage));
+            const minPercentage = Math.min(...miningPools.map(p => p.percentage));
+            
             let ballSize;
-            if (pool.percentage === 18.5) {
-              // AntPool: maximum size
+            if (pool.percentage === maxPercentage) {
+              // Largest pool: maximum size
               ballSize = maxSize;
-            } else if (pool.percentage === 1.4) {
-              // Tiny Pools: exactly 18x smaller than AntPool
-              ballSize = maxSize / 18.0; // 3.0 / 18 = 0.167
+            } else if (pool.percentage === minPercentage) {
+              // Smallest pool: minimum size
+              ballSize = minSize;
             } else {
-              // Linear interpolation between AntPool (18.5%) and Tiny Pools (1.4%) extremes
-              const antPoolPercent = 18.5;
-              const tinyPoolsPercent = 1.4;
-              const antPoolSize = maxSize;
-              const tinyPoolsSize = maxSize / 18.0;
-
-              // Calculate position between the two extremes
-              const ratio = (pool.percentage - tinyPoolsPercent) / (antPoolPercent - tinyPoolsPercent);
-              ballSize = tinyPoolsSize + ratio * (antPoolSize - tinyPoolsSize);
+              // Linear interpolation between max and min
+              const ratio = (pool.percentage - minPercentage) / (maxPercentage - minPercentage);
+              ballSize = minSize + ratio * (maxSize - minSize);
               ballSize = Math.max(minSize, Math.min(maxSize, ballSize)); // Clamp
             }
 
@@ -837,83 +834,83 @@ export default function BlockchainVisualizer() {
           {viewMode === 'single' ? (
             <>
               {/* BSV Pools */}
-              {/* TAAL - Largest BSV miner */}
+              {/* TAAL Mining - Largest BSV miner */}
               <div className="p-3 rounded" style={{ backgroundColor: 'rgba(255, 0, 0, 0.2)', borderLeft: '4px solid #FF0000' }}>
                 <div className="flex justify-between items-center">
-                  <span className="font-bold text-lg" style={{ color: '#FF0000' }}>TAAL</span>
-                  <span className="text-white font-bold text-lg">25.0%</span>
+                  <span className="font-bold text-lg" style={{ color: '#FF0000' }}>TAAL Mining</span>
+                  <span className="text-white font-bold text-lg">28.5%</span>
                 </div>
-                <div className="text-gray-300 text-xs">~625 PH/s</div>
+                <div className="text-gray-300 text-xs">~712 PH/s</div>
               </div>
 
               {/* GorillaPool */}
               <div className="p-2.5 rounded" style={{ backgroundColor: 'rgba(255, 51, 0, 0.2)', borderLeft: '4px solid #FF3300' }}>
                 <div className="flex justify-between items-center">
                   <span className="font-bold text-base" style={{ color: '#FF3300' }}>GorillaPool</span>
-                  <span className="text-white font-bold text-base">20.0%</span>
+                  <span className="text-white font-bold text-base">22.0%</span>
                 </div>
-                <div className="text-gray-300 text-xs">~500 PH/s</div>
+                <div className="text-gray-300 text-xs">~550 PH/s</div>
               </div>
 
               {/* SVPool */}
               <div className="p-2.5 rounded" style={{ backgroundColor: 'rgba(255, 102, 0, 0.2)', borderLeft: '4px solid #FF6600' }}>
                 <div className="flex justify-between items-center">
                   <span className="font-bold text-base" style={{ color: '#FF6600' }}>SVPool</span>
-                  <span className="text-white font-bold text-base">15.0%</span>
+                  <span className="text-white font-bold text-base">16.0%</span>
                 </div>
-                <div className="text-gray-300 text-xs">~375 PH/s</div>
-              </div>
-
-              {/* WhatsOnChain */}
-              <div className="p-2 rounded" style={{ backgroundColor: 'rgba(255, 153, 0, 0.2)', borderLeft: '4px solid #FF9900' }}>
-                <div className="flex justify-between items-center">
-                  <span className="font-bold" style={{ color: '#FF9900' }}>WhatsOnChain</span>
-                  <span className="text-white font-bold">8.0%</span>
-                </div>
-                <div className="text-gray-300 text-xs">~200 PH/s</div>
+                <div className="text-gray-300 text-xs">~400 PH/s</div>
               </div>
 
               {/* ViaBTC BSV */}
+              <div className="p-2 rounded" style={{ backgroundColor: 'rgba(255, 153, 0, 0.2)', borderLeft: '4px solid #FF9900' }}>
+                <div className="flex justify-between items-center">
+                  <span className="font-bold" style={{ color: '#FF9900' }}>ViaBTC BSV</span>
+                  <span className="text-white font-bold">9.5%</span>
+                </div>
+                <div className="text-gray-300 text-xs">~237 PH/s</div>
+              </div>
+
+              {/* Mempool.com */}
               <div className="p-2 rounded" style={{ backgroundColor: 'rgba(255, 204, 0, 0.2)', borderLeft: '4px solid #FFCC00' }}>
                 <div className="flex justify-between items-center">
-                  <span className="font-bold" style={{ color: '#FFCC00' }}>ViaBTC BSV</span>
-                  <span className="text-white font-bold">7.0%</span>
+                  <span className="font-bold" style={{ color: '#FFCC00' }}>Mempool.com</span>
+                  <span className="text-white font-bold">6.0%</span>
                 </div>
-                <div className="text-gray-300 text-xs">~175 PH/s</div>
+                <div className="text-gray-300 text-xs">~150 PH/s</div>
               </div>
 
-              {/* Mempool */}
+              {/* MARAPool BSV */}
               <div className="p-1.5 rounded" style={{ backgroundColor: 'rgba(255, 255, 0, 0.2)', borderLeft: '4px solid #FFFF00' }}>
                 <div className="flex justify-between items-center">
-                  <span className="font-bold text-sm" style={{ color: '#FFFF00' }}>Mempool</span>
-                  <span className="text-white font-bold text-sm">5.0%</span>
-                </div>
-                <div className="text-gray-300 text-xs">~125 PH/s</div>
-              </div>
-
-              {/* MARAPool */}
-              <div className="p-1.5 rounded" style={{ backgroundColor: 'rgba(204, 255, 0, 0.2)', borderLeft: '4px solid #CCFF00' }}>
-                <div className="flex justify-between items-center">
-                  <span className="font-bold text-sm" style={{ color: '#CCFF00' }}>MARAPool</span>
+                  <span className="font-bold text-sm" style={{ color: '#FFFF00' }}>MARAPool BSV</span>
                   <span className="text-white font-bold text-sm">4.5%</span>
                 </div>
                 <div className="text-gray-300 text-xs">~112 PH/s</div>
               </div>
 
-              {/* SBI Mining */}
-              <div className="p-1.5 rounded" style={{ backgroundColor: 'rgba(153, 255, 0, 0.2)', borderLeft: '4px solid #99FF00' }}>
+              {/* Unknown BSV */}
+              <div className="p-1.5 rounded" style={{ backgroundColor: 'rgba(204, 255, 0, 0.2)', borderLeft: '4px solid #CCFF00' }}>
                 <div className="flex justify-between items-center">
-                  <span className="font-bold text-sm" style={{ color: '#99FF00' }}>SBI Mining</span>
+                  <span className="font-bold text-sm" style={{ color: '#CCFF00' }}>Unknown BSV</span>
                   <span className="text-white font-bold text-sm">3.5%</span>
                 </div>
                 <div className="text-gray-300 text-xs">~87 PH/s</div>
               </div>
 
-              {/* Unknown */}
+              {/* SBI Crypto BSV */}
+              <div className="p-1.5 rounded" style={{ backgroundColor: 'rgba(153, 255, 0, 0.2)', borderLeft: '4px solid #99FF00' }}>
+                <div className="flex justify-between items-center">
+                  <span className="font-bold text-sm" style={{ color: '#99FF00' }}>SBI Crypto BSV</span>
+                  <span className="text-white font-bold text-sm">3.0%</span>
+                </div>
+                <div className="text-gray-300 text-xs">~75 PH/s</div>
+              </div>
+
+              {/* BSVPool.com */}
               <div className="p-1 rounded" style={{ backgroundColor: 'rgba(102, 255, 0, 0.2)', borderLeft: '3px solid #66FF00' }}>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm" style={{ color: '#66FF00' }}>Unknown</span>
-                  <span className="text-white text-sm">3.0%</span>
+                  <span className="text-sm" style={{ color: '#66FF00' }}>BSVPool.com</span>
+                  <span className="text-white text-sm">2.5%</span>
                 </div>
               </div>
 
@@ -921,23 +918,23 @@ export default function BlockchainVisualizer() {
               <div className="p-1 rounded" style={{ backgroundColor: 'rgba(51, 255, 0, 0.2)', borderLeft: '3px solid #33FF00' }}>
                 <div className="flex justify-between items-center">
                   <span className="text-sm" style={{ color: '#33FF00' }}>Solo Miners</span>
-                  <span className="text-white text-sm">2.5%</span>
-                </div>
-              </div>
-
-              {/* BSV Pool */}
-              <div className="p-1 rounded" style={{ backgroundColor: 'rgba(0, 255, 0, 0.2)', borderLeft: '3px solid #00FF00' }}>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm" style={{ color: '#00FF00' }}>BSV Pool</span>
                   <span className="text-white text-sm">2.0%</span>
                 </div>
               </div>
 
-              {/* Other Nodes */}
+              {/* Sigmapool */}
+              <div className="p-1 rounded" style={{ backgroundColor: 'rgba(0, 255, 0, 0.2)', borderLeft: '3px solid #00FF00' }}>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm" style={{ color: '#00FF00' }}>Sigmapool</span>
+                  <span className="text-white text-sm">1.5%</span>
+                </div>
+              </div>
+
+              {/* Other Pools */}
               <div className="p-1 rounded" style={{ backgroundColor: 'rgba(0, 255, 51, 0.2)', borderLeft: '3px solid #00FF33' }}>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm" style={{ color: '#00FF33' }}>Other Nodes</span>
-                  <span className="text-white text-sm">4.5%</span>
+                  <span className="text-sm" style={{ color: '#00FF33' }}>Other Pools</span>
+                  <span className="text-white text-sm">1.0%</span>
                 </div>
               </div>
             </>
