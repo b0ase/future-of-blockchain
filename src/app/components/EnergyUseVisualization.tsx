@@ -48,7 +48,7 @@ function Bar3D({ data, index, maxValue, isHovered, onHover, animationProgress }:
       energyHeight = baseEnergyHeight * energyGrowthFactor
       displayEnergy = data.energyGJ * energyGrowthFactor
       // Transaction volume grows rapidly to 2500T mark
-      // Aggressive growth - reaches 2500T at 30% animation progress
+      // Aggressive exponential growth - reaches 2500T at 30% animation progress
       const bankingLoss = 0.6 * animationProgress
       // Exponential curve - reaches 5000x growth (0.5T to 2500T)
       const txGrowthFactor = animationProgress > 0.3 
