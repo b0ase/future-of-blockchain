@@ -1146,7 +1146,21 @@ function BlockchainBlocks({ viewMode }: { viewMode: string }) {
 
 export default function BlockchainVisualizer() {
   const controlsRef = useRef<OrbitControlsType | null>(null)
-  const [viewMode, setViewMode] = React.useState<'single' | 'multi' | 'play' | 'single+' | 'multi+' | 'play+' | 'energy'>('single+')
+  
+  // Check URL hash for initial view mode
+  const getInitialViewMode = () => {
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash.toLowerCase()
+      if (hash === '#energy') return 'energy'
+      if (hash === '#bsv') return 'single'
+      if (hash === '#btc') return 'multi'
+      if (hash === '#fantasy') return 'play'
+      if (hash === '#lightning') return 'play+'
+    }
+    return 'single+'
+  }
+  
+  const [viewMode, setViewMode] = React.useState<'single' | 'multi' | 'play' | 'single+' | 'multi+' | 'play+' | 'energy'>(getInitialViewMode())
   const [bsvMiningPools, setBsvMiningPools] = useState<MiningPool[]>(fallbackBSVPools)
   const [isLoadingPools, setIsLoadingPools] = useState(false)
   const [animationKey, setAnimationKey] = useState(0) // Key to force re-render animations
@@ -1166,6 +1180,23 @@ export default function BlockchainVisualizer() {
     checkMobile()
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+  
+  // Listen for hash changes to update view mode
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.toLowerCase()
+      if (hash === '#energy') setViewMode('energy')
+      else if (hash === '#bsv') setViewMode('single')
+      else if (hash === '#btc') setViewMode('multi')
+      else if (hash === '#fantasy') setViewMode('play')
+      else if (hash === '#lightning') setViewMode('play+')
+      else if (hash === '#bsv+') setViewMode('single+')
+      else if (hash === '#btc+') setViewMode('multi+')
+    }
+    
+    window.addEventListener('hashchange', handleHashChange)
+    return () => window.removeEventListener('hashchange', handleHashChange)
   }, [])
   
   // Fetch BSV mining pool data when component mounts or viewMode changes

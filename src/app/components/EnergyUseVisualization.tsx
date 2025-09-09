@@ -27,39 +27,53 @@ function Bar3D({ data, index, maxValue, isHovered, onHover, animationProgress }:
   // Base heights
   const baseCostHeight = (data.yearCost / 2000) * 40
   const baseEnergyHeight = (data.energyGJ / 2500) * 40
-  const baseTxHeight = (data.txVolume / 100) * 40 // scale for transaction volume
+  const baseTxHeight = (data.txVolume / 5000) * 60 // scale for 5000T max, allow taller growth
   
   // Apply animation changes
   let costHeight = baseCostHeight
   let energyHeight = baseEnergyHeight
   let txHeight = baseTxHeight
   let displayTxVolume = data.txVolume
+  let displayCost = data.yearCost
+  let displayEnergy = data.energyGJ
   
   if (animationProgress > 0) {
     if (data.name === 'Bitcoin Mining') {
       // Costs grow moderately to reflect increased mining activity (3x increase)
       const costGrowthFactor = 1 + (2.0 * animationProgress)
       costHeight = baseCostHeight * costGrowthFactor
+      displayCost = data.yearCost * costGrowthFactor
       // Energy grows slower (2x increase)
       const energyGrowthFactor = 1 + (1.0 * animationProgress)
       energyHeight = baseEnergyHeight * energyGrowthFactor
-      // Transaction volume grows VERY RAPIDLY to 2500T mark
-      // Aggressive exponential growth to reach 2500T quickly
+      displayEnergy = data.energyGJ * energyGrowthFactor
+      // Transaction volume EXPLODES to 5000T mark IMMEDIATELY
+      // Ultra-aggressive growth - reaches 5000T at just 20% animation progress
       const bankingLoss = 0.6 * animationProgress
-      // Use aggressive exponential growth - reaches 5000x growth at full animation
-      const txGrowthFactor = Math.pow(5000, animationProgress * 0.7) // Reaches max 70% through animation
-      txHeight = baseTxHeight * Math.min(txGrowthFactor, 100) // Cap visual height at 100x for clarity
-      // Update displayed transaction volume to reach 2500T (from 0.5T base = 5000x growth)
-      displayTxVolume = data.txVolume * Math.min(txGrowthFactor, 5000) // Show actual growth up to 2500T
+      // Extreme exponential curve - reaches 10000x growth very early (0.5T to 5000T)
+      const txGrowthFactor = animationProgress > 0.2 
+        ? 10000 // Max out at 5000T after 20% progress
+        : Math.pow(10000, animationProgress / 0.2) // Exponential growth to 10000x in first 20%
+      // Calculate the actual new transaction volume for height
+      const newTxVolume = data.txVolume * txGrowthFactor // Goes from 0.5T to 5000T
+      txHeight = (newTxVolume / 5000) * 60 // Taller bars - recalculate height based on 5000T scale
+      // Update displayed transaction volume to reach 5000T
+      displayTxVolume = newTxVolume // Show actual growth up to 5000T
     } else if (data.name === 'Banking System') {
-      // Banking decreases more gradually (50% decrease) as functions move to Bitcoin
-      const shrinkFactor = 1 - (0.5 * animationProgress)
+      // Banking decreases by 75% - same rate as transaction volume
+      const shrinkFactor = 1 - (0.75 * animationProgress)
       costHeight = baseCostHeight * shrinkFactor
       energyHeight = baseEnergyHeight * shrinkFactor
-      // Transaction volume DECREASES (60% decrease) as transactions move to Bitcoin
-      txHeight = baseTxHeight * (1 - (0.6 * animationProgress))
+      // Transaction volume DECREASES from 1875T down as transactions move to Bitcoin
+      // Decrease by 75% (from 1875T to ~470T) to show migration to Bitcoin
+      const txShrinkFactor = 1 - (0.75 * animationProgress)
+      const newBankingTxVolume = data.txVolume * txShrinkFactor
+      txHeight = (newBankingTxVolume / 5000) * 60 // Recalculate height based on 5000T scale with taller bars
       // Update displayed transaction volume
-      displayTxVolume = data.txVolume * (1 - (0.6 * animationProgress))
+      displayTxVolume = newBankingTxVolume
+      // Update displayed cost and energy values to match the shrinkage
+      displayCost = data.yearCost * shrinkFactor
+      displayEnergy = data.energyGJ * shrinkFactor
     }
   }
   
@@ -151,7 +165,7 @@ function Bar3D({ data, index, maxValue, isHovered, onHover, animationProgress }:
         anchorY="middle"
         visible={isHovered}
       >
-        ${data.yearCost}B
+        ${displayCost.toFixed(0)}B
       </Text>
       
       {/* Energy Value */}
@@ -163,7 +177,7 @@ function Bar3D({ data, index, maxValue, isHovered, onHover, animationProgress }:
         anchorY="middle"
         visible={isHovered}
       >
-        {data.energyGJ} GJ
+        {displayEnergy.toFixed(0)} GJ
       </Text>
       
       {/* Transaction Volume Value */}
@@ -207,7 +221,7 @@ function Chart3D({ animationProgress, controlsRef }: { animationProgress: number
   
   const data: DataPoint[] = [
     { name: 'Bitcoin Mining', yearCost: 16, energyGJ: 180, txVolume: 0.5, color: '#7C3AED' },
-    { name: 'Banking System', yearCost: 1870, energyGJ: 2340, txVolume: 93.6, color: '#7C3AED' }  // 2340/2500 * 100 = 93.6 to match energy bar height
+    { name: 'Banking System', yearCost: 1870, energyGJ: 2340, txVolume: 1875, color: '#7C3AED' }  // Start at 1875T transaction volume
   ]
   
   const maxValue = Math.max(...data.map(d => Math.max(d.yearCost, d.energyGJ)))
@@ -230,9 +244,9 @@ function Chart3D({ animationProgress, controlsRef }: { animationProgress: number
       <Text position={[-32, 10, 0]} fontSize={1.5} color="#00ff88">625</Text>
       <Text position={[-32, 0, 0]} fontSize={1.5} color="#00ff88">0</Text>
       
-      {/* Title */}
+      {/* Title - moved to background so bars can grow through it */}
       <Text
-        position={[0, 50, 0]}
+        position={[0, 50, -10]}
         fontSize={4}
         color="#00ff88"
         anchorX="center"
@@ -242,7 +256,7 @@ function Chart3D({ animationProgress, controlsRef }: { animationProgress: number
       </Text>
       
       <Text
-        position={[0, 46, 0]}
+        position={[0, 46, -10]}
         fontSize={3}
         color="#00ff88"
         anchorX="center"
@@ -250,8 +264,8 @@ function Chart3D({ animationProgress, controlsRef }: { animationProgress: number
         Across Monetary and Banking Systems
       </Text>
       
-      {/* Legend */}
-      <group position={[35, 35, 0]}>
+      {/* Legend - moved back and adjusted for mobile */}
+      <group position={[30, 25, -5]}>
         <mesh position={[0, 0, 0]}>
           <boxGeometry args={[2, 2, 0.5]} />
           <meshStandardMaterial color="#7C3AED" />
