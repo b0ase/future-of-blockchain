@@ -517,14 +517,14 @@ function MeshNetwork() {
         </>
       )}
       
-      {/* Animated transaction pulse */}
-      <mesh ref={txRef}>
+      {/* Animated transaction pulse - REMOVED (now using Lightning Network routing) */}
+      {/* <mesh ref={txRef}>
         <sphereGeometry args={[0.5, 16, 16]} />
         <meshStandardMaterial color="#ffff00" emissive="#ffff00" emissiveIntensity={1.0} />
-      </mesh>
+      </mesh> */}
       
-      {/* Transaction label that follows the pulse */}
-      <Text
+      {/* Transaction label that follows the pulse - REMOVED */}
+      {/* <Text
         position={[0, chainHeight + 3, -20]}
         fontSize={0.6}
         color="#ffff00"
@@ -532,7 +532,7 @@ function MeshNetwork() {
         anchorY="middle"
       >
         P2P Transaction
-      </Text>
+      </Text> */}
     </group>
   );
 }
@@ -702,8 +702,6 @@ function AnimatedCentralChain() {
                 fontSize={0.4 + progress * 0.4}
                 color={`hsl(${hue}, 90%, 70%)`}
                 anchorX="left"
-                transparent
-                opacity={Math.max(0.6, opacity + 0.3)}
               >
                 {size >= 1099511627776 ? `${(size/1099511627776).toFixed(0)}TB` : // 2^40 MB = 1TB (in MB)
                  size >= 1073741824 ? `${(size/1073741824).toFixed(0)}GB` : // 2^30 MB = 1GB (in MB) 
@@ -717,6 +715,236 @@ function AnimatedCentralChain() {
         
         return blocks
       })()}
+    </group>
+  )
+}
+
+function LightningNetworkRouting() {
+  const [pathSegments, setPathSegments] = useState<any[]>([])
+  const [currentStep, setCurrentStep] = useState(0)
+  
+  useFrame((state) => {
+    // Animate the path finding step by step
+    const time = state.clock.elapsedTime
+    const step = Math.floor(time * 2) % 80 // Progress every 0.5 seconds, reset at 80
+    setCurrentStep(step)
+  })
+  
+  // Generate Lightning Network paths with 90-degree turns
+  useEffect(() => {
+    const generatePaths = () => {
+      const segments = []
+      const gridSize = 5
+      const startX = -40
+      const startZ = -30
+      const endX = 40
+      const endZ = 30
+      
+      // Main successful path with grid-based movement
+      let x = startX
+      let z = startZ
+      let stepNum = 0
+      let lastDirection = 'horizontal'
+      
+      // Build main path
+      while ((x !== endX || z !== endZ) && stepNum < 60) {
+        const toEndX = endX - x
+        const toEndZ = endZ - z
+        
+        // Decide next move (prioritize getting closer to target)
+        let nextX = x
+        let nextZ = z
+        let segmentLength = gridSize
+        
+        if (Math.abs(toEndX) > Math.abs(toEndZ)) {
+          // Move horizontally
+          if (toEndX > 0) {
+            segmentLength = Math.min(gridSize * 3, toEndX)
+            segments.push({ 
+              x1: x, z1: z, 
+              x2: x + segmentLength, z2: z,
+              step: stepNum, 
+              type: 'horizontal',
+              status: 'main'
+            })
+            nextX = x + segmentLength
+          }
+          lastDirection = 'horizontal'
+        } else if (toEndZ !== 0) {
+          // Move vertically
+          if (toEndZ > 0) {
+            segmentLength = Math.min(gridSize * 2, toEndZ)
+          } else {
+            segmentLength = Math.max(-gridSize * 2, toEndZ)
+          }
+          segments.push({ 
+            x1: x, z1: z, 
+            x2: x, z2: z + segmentLength,
+            step: stepNum, 
+            type: 'vertical',
+            status: 'main'
+          })
+          nextZ = z + segmentLength
+          lastDirection = 'vertical'
+        }
+        
+        // Create fork that will fail (25% chance)
+        if (Math.random() < 0.25 && stepNum > 3 && stepNum < 40) {
+          let forkX = x
+          let forkZ = z
+          const forkSteps = Math.floor(Math.random() * 4) + 2
+          
+          for (let i = 0; i < forkSteps; i++) {
+            const forkDir = Math.random() < 0.5
+            if (forkDir) {
+              // Fork goes horizontally
+              const forkLength = gridSize * 2
+              segments.push({
+                x1: forkX, z1: forkZ,
+                x2: forkX + forkLength, z2: forkZ,
+                step: stepNum + i + 1,
+                type: 'horizontal',
+                status: 'fork',
+                failsAt: stepNum + forkSteps
+              })
+              forkX += forkLength
+            } else {
+              // Fork goes vertically
+              const forkLength = gridSize * (Math.random() < 0.5 ? 2 : -2)
+              segments.push({
+                x1: forkX, z1: forkZ,
+                x2: forkX, z2: forkZ + forkLength,
+                step: stepNum + i + 1,
+                type: 'vertical',
+                status: 'fork',
+                failsAt: stepNum + forkSteps
+              })
+              forkZ += forkLength
+            }
+          }
+        }
+        
+        x = nextX
+        z = nextZ
+        stepNum++
+      }
+      
+      // Final segments to reach Bob
+      if (x !== endX) {
+        segments.push({
+          x1: x, z1: z,
+          x2: endX, z2: z,
+          step: stepNum++,
+          type: 'horizontal',
+          status: 'main'
+        })
+      }
+      if (z !== endZ) {
+        segments.push({
+          x1: endX, z1: z,
+          x2: endX, z2: endZ,
+          step: stepNum++,
+          type: 'vertical',
+          status: 'main'
+        })
+      }
+      
+      return segments
+    }
+    
+    setPathSegments(generatePaths())
+  }, [])
+  
+  return (
+    <group position={[0, -25, 0]}> {/* Position on mesh network plane */}
+      {/* Alice node */}
+      <mesh position={[-40, 0.5, -30]}>
+        <sphereGeometry args={[2, 16, 16]} />
+        <meshStandardMaterial color="#00ff00" emissive="#00ff00" emissiveIntensity={0.5} />
+      </mesh>
+      <Text position={[-40, 3, -30]} fontSize={1.5} color="#00ff00">
+        Alice
+      </Text>
+      
+      {/* Bob node */}
+      <mesh position={[40, 0.5, 30]}>
+        <sphereGeometry args={[2, 16, 16]} />
+        <meshStandardMaterial color="#ff00ff" emissive="#ff00ff" emissiveIntensity={0.5} />
+      </mesh>
+      <Text position={[40, 3, 30]} fontSize={1.5} color="#ff00ff">
+        Bob
+      </Text>
+      
+      {/* Animated path segments with 90-degree turns */}
+      {pathSegments.map((segment, index) => {
+        const isVisible = segment.step <= currentStep
+        const isFailed = segment.status === 'fork' && segment.failsAt && currentStep >= segment.failsAt
+        
+        if (!isVisible) return null
+        
+        const length = segment.type === 'horizontal' 
+          ? Math.abs(segment.x2 - segment.x1)
+          : Math.abs(segment.z2 - segment.z1)
+        
+        const centerX = (segment.x1 + segment.x2) / 2
+        const centerZ = (segment.z1 + segment.z2) / 2
+        
+        return (
+          <group key={index}>
+            {/* Path segment bar */}
+            <mesh 
+              position={[centerX, 0.2, centerZ]}
+              rotation={segment.type === 'horizontal' ? [0, 0, 0] : [0, Math.PI / 2, 0]}
+            >
+              <boxGeometry args={[length, 0.3, 1]} />
+              <meshStandardMaterial 
+                color={
+                  isFailed ? '#ff0000' : 
+                  segment.status === 'fork' ? '#ffff00' : 
+                  '#00ffff'
+                }
+                emissive={
+                  isFailed ? '#ff0000' : 
+                  segment.status === 'fork' ? '#ffff00' : 
+                  '#00ffff'
+                }
+                emissiveIntensity={isFailed ? 0.1 : 0.4}
+                transparent={isFailed}
+                opacity={isFailed ? 0.2 : 0.9}
+              />
+            </mesh>
+            
+            {/* Corner connectors for turns */}
+            {index > 0 && pathSegments[index - 1] && 
+             pathSegments[index - 1].type !== segment.type && 
+             pathSegments[index - 1].status === segment.status && (
+              <mesh position={[segment.x1, 0.2, segment.z1]}>
+                <sphereGeometry args={[0.8, 8, 8]} />
+                <meshStandardMaterial 
+                  color={segment.status === 'fork' ? '#ffff00' : '#00ffff'}
+                  emissive={segment.status === 'fork' ? '#ffff00' : '#00ffff'}
+                  emissiveIntensity={0.5}
+                />
+              </mesh>
+            )}
+            
+            {/* Failed end marker */}
+            {isFailed && segment.type === (segment.status === 'fork' ? segment.type : null) && (
+              <mesh position={[segment.x2, 0.5, segment.z2]}>
+                <sphereGeometry args={[1.2, 8, 8]} />
+                <meshStandardMaterial color="#ff0000" emissive="#ff0000" emissiveIntensity={0.8} />
+              </mesh>
+            )}
+          </group>
+        )
+      })}
+      
+      {/* Success indicator when path completes */}
+      {currentStep > 50 && (
+        <Text position={[0, 5, 0]} fontSize={2} color="#00ff00">
+          ⚡ Payment Routed!
+        </Text>
+      )}
     </group>
   )
 }
@@ -784,8 +1012,6 @@ function AnimatedBTCChain() {
                 fontSize={0.3}
                 color="#0099ff"
                 anchorX="left"
-                transparent
-                opacity={0.8}
               >
                 1MB
               </Text>
@@ -963,7 +1189,24 @@ export default function BlockchainVisualizer() {
   const [bsvMiningPools, setBsvMiningPools] = useState<MiningPool[]>(fallbackBSVPools)
   const [isLoadingPools, setIsLoadingPools] = useState(false)
   const [animationKey, setAnimationKey] = useState(0) // Key to force re-render animations
+  const [isLegendOpen, setIsLegendOpen] = useState(true) // Legend visibility state
+  const [isMobile, setIsMobile] = useState(false) // Mobile detection
 
+  // Detect mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+      // Auto-collapse legend on mobile
+      if (window.innerWidth < 768) {
+        setIsLegendOpen(false)
+      }
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+  
   // Fetch BSV mining pool data when component mounts or viewMode changes
   useEffect(() => {
     if (viewMode === 'single' || viewMode === 'single+') {
@@ -1015,6 +1258,7 @@ export default function BlockchainVisualizer() {
           <>
             <MultiChainBlocks />
             <MeshNetwork />
+            <LightningNetworkRouting key={`lightning-${animationKey}`} />
           </>
         )}
         <OrbitControls
@@ -1038,14 +1282,28 @@ export default function BlockchainVisualizer() {
 
       </Canvas>
 
-      {/* FULL LEFT SIDE Mining Pool Information Panel */}
-      <div className="absolute top-0 left-0 w-96 h-full bg-black/95 backdrop-blur-md p-3 text-white font-mono text-xs border-r border-blue-500/30 overflow-y-auto">
-        <h3 className="text-blue-400 font-bold mb-3 flex items-center gap-2 text-sm">
-          ⛏️ {viewMode === 'single' || viewMode === 'single+' ? 'BSV NODE NETWORK' : viewMode === 'play' || viewMode === 'play+' ? 'FANTASY NETWORK' : 'BTC MINING POOLS'}
-        </h3>
+      {/* FULL LEFT SIDE Mining Pool Information Panel - Collapsible on Mobile */}
+      <div className={`absolute top-0 left-0 ${isMobile ? 'w-full' : 'w-96'} ${isLegendOpen ? 'h-full' : 'h-auto'} bg-black/95 backdrop-blur-md ${isMobile ? 'p-2' : 'p-3'} text-white font-mono text-xs border-r border-blue-500/30 ${isLegendOpen ? 'overflow-y-auto' : 'overflow-hidden'} transition-all duration-300`}>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-blue-400 font-bold flex items-center gap-2 text-sm">
+            ⛏️ {viewMode === 'single' || viewMode === 'single+' ? 'BSV NODE NETWORK' : viewMode === 'play' || viewMode === 'play+' ? 'FANTASY NETWORK' : 'BTC MINING POOLS'}
+          </h3>
+          {isMobile && (
+            <button
+              onClick={() => setIsLegendOpen(!isLegendOpen)}
+              className="text-blue-400 hover:text-blue-300 transition-colors p-1"
+              aria-label={isLegendOpen ? 'Collapse legend' : 'Expand legend'}
+            >
+              {isLegendOpen ? '▼' : '▶'}
+            </button>
+          )}
+        </div>
 
-        {/* Total Hash Rate */}
-        <div className="mb-3 p-2 bg-blue-900/30 rounded border border-blue-500/20">
+        {/* Content - Only show when open */}
+        {isLegendOpen && (
+          <>
+            {/* Total Hash Rate */}
+            <div className="mb-3 p-2 bg-blue-900/30 rounded border border-blue-500/20">
           <div className="text-cyan-400 font-bold text-sm">🌐 TOTAL NETWORK</div>
           <div className="text-yellow-400 text-lg font-bold">{viewMode === 'single' || viewMode === 'single+' ? '~0.6 EH/s' : viewMode === 'play' || viewMode === 'play+' ? 'DISTRIBUTED' : '~680 EH/s'}</div>
         </div>
@@ -1230,7 +1488,8 @@ export default function BlockchainVisualizer() {
             </>
           )}
         </div>
-
+          </>
+        )}
       </div>
 
       {/* View Mode Toggle - Top Center */}
