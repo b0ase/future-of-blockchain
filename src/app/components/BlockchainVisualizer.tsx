@@ -1318,7 +1318,7 @@ export default function BlockchainVisualizer() {
             {viewMode === 'play+' && (
               <>
                 <MultiChainBlocks />
-                <MeshNetwork />
+                {/* MeshNetwork removed - keeping only Lightning Network routing below */}
                 <LightningNetworkRouting key={`lightning-${animationKey}`} />
               </>
             )}

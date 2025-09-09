@@ -33,6 +33,7 @@ function Bar3D({ data, index, maxValue, isHovered, onHover, animationProgress }:
   let costHeight = baseCostHeight
   let energyHeight = baseEnergyHeight
   let txHeight = baseTxHeight
+  let displayTxVolume = data.txVolume
   
   if (animationProgress > 0) {
     if (data.name === 'Bitcoin Mining') {
@@ -42,11 +43,14 @@ function Bar3D({ data, index, maxValue, isHovered, onHover, animationProgress }:
       // Energy grows slower (2x increase)
       const energyGrowthFactor = 1 + (1.0 * animationProgress)
       energyHeight = baseEnergyHeight * energyGrowthFactor
-      // Transaction volume grows AS banking decreases (inverse relationship)
-      // When banking loses 60% of TX, Bitcoin gains equivalent volume
+      // Transaction volume grows VERY RAPIDLY to 2500T mark
+      // Aggressive exponential growth to reach 2500T quickly
       const bankingLoss = 0.6 * animationProgress
-      const txGrowthFactor = 1 + (bankingLoss * 93.6 / 0.5) // Scale banking's loss to Bitcoin's gain
-      txHeight = baseTxHeight * Math.min(txGrowthFactor, 6) // Cap at 6x growth for visual clarity
+      // Use aggressive exponential growth - reaches 5000x growth at full animation
+      const txGrowthFactor = Math.pow(5000, animationProgress * 0.7) // Reaches max 70% through animation
+      txHeight = baseTxHeight * Math.min(txGrowthFactor, 100) // Cap visual height at 100x for clarity
+      // Update displayed transaction volume to reach 2500T (from 0.5T base = 5000x growth)
+      displayTxVolume = data.txVolume * Math.min(txGrowthFactor, 5000) // Show actual growth up to 2500T
     } else if (data.name === 'Banking System') {
       // Banking decreases more gradually (50% decrease) as functions move to Bitcoin
       const shrinkFactor = 1 - (0.5 * animationProgress)
@@ -54,6 +58,8 @@ function Bar3D({ data, index, maxValue, isHovered, onHover, animationProgress }:
       energyHeight = baseEnergyHeight * shrinkFactor
       // Transaction volume DECREASES (60% decrease) as transactions move to Bitcoin
       txHeight = baseTxHeight * (1 - (0.6 * animationProgress))
+      // Update displayed transaction volume
+      displayTxVolume = data.txVolume * (1 - (0.6 * animationProgress))
     }
   }
   
@@ -169,7 +175,7 @@ function Bar3D({ data, index, maxValue, isHovered, onHover, animationProgress }:
         anchorY="middle"
         visible={isHovered}
       >
-        {data.txVolume}T tx
+        {displayTxVolume.toFixed(1)}T tx
       </Text>
     </group>
   )
