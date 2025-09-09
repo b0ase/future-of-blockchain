@@ -18,7 +18,7 @@ function MiningPoolPieChart({ viewMode }: { viewMode: string }) {
 
   // Fetch real-time BSV mining pool data
   useEffect(() => {
-    if (viewMode === 'single') {
+    if (viewMode === 'single' || viewMode === 'single+') {
       setIsLoading(true)
       getBSVMiningPools()
         .then(pools => {
@@ -62,8 +62,8 @@ function MiningPoolPieChart({ viewMode }: { viewMode: string }) {
     { name: 'Tiny Pools', percentage: 1.4, color: '#3300FF' }       // Blue-Violet
   ]
 
-  // Use BSV nodes for 'single' view, BTC pools for 'multi' view
-  const miningPools = viewMode === 'single' ? bsvNodes : btcPools
+  // Use BSV nodes for 'single' and 'single+' views, BTC pools for others
+  const miningPools = (viewMode === 'single' || viewMode === 'single+') ? bsvNodes : btcPools
 
   useFrame((state) => {
     // Gently rotate the entire visualization
@@ -281,29 +281,82 @@ function MiningPoolPieChart({ viewMode }: { viewMode: string }) {
 
 function MeshNetwork() {
   const txRef = useRef<THREE.Mesh>(null)
+  const [txPath, setTxPath] = useState<THREE.Vector3[]>([])
   
-  // Define the two specific node positions from the grid
+  // Define the grid parameters
   const gridSize = 25
   const spacing = 5
   const extent = (gridSize - 1) * spacing / 2
+  const chainHeight = 25 * (0.25 + 0.1) + 0.3  // Height of chain (25 blocks * (size + gap) + base)
   
-  // Pick two specific grid positions for our transaction nodes
-  const node1Pos: [number, number, number] = [-extent + 5 * spacing, 0, -extent + 8 * spacing] // Grid position [5, 8]
-  const node2Pos: [number, number, number] = [-extent + 18 * spacing, 0, -extent + 16 * spacing] // Grid position [18, 16]
+  // Create a grid-based path with 90-degree turns only
+  // Transaction routes through adjacent nodes (one grid square at a time)
+  useEffect(() => {
+    const path: THREE.Vector3[] = []
+    
+    // Grid spacing is 5 units, so each hop is exactly 5 units
+    // Start at Alice's chain (grid position: x=-30, z=0)
+    const startX = -30
+    const startZ = 0
+    const endX = 30
+    const endZ = 0
+    
+    // Build path with right-angle turns only
+    let currentX = startX
+    let currentZ = startZ
+    
+    // Add starting position (Alice)
+    path.push(new THREE.Vector3(currentX, chainHeight, currentZ))
+    
+    // Move right one square at a time
+    // First, we need to go around other chains, so go forward (negative Z)
+    // Move forward 3 squares
+    for (let i = 0; i < 3; i++) {
+      currentZ -= spacing
+      path.push(new THREE.Vector3(currentX, chainHeight, currentZ))
+    }
+    
+    // Now turn right and move toward Bob (positive X direction)
+    // Move right 12 squares (from -30 to 30 = 60 units / 5 = 12 squares)
+    for (let i = 0; i < 12; i++) {
+      currentX += spacing
+      path.push(new THREE.Vector3(currentX, chainHeight, currentZ))
+    }
+    
+    // Turn right again and move back toward center Z
+    // Move back 3 squares to reach Bob's Z position
+    for (let i = 0; i < 3; i++) {
+      currentZ += spacing
+      path.push(new THREE.Vector3(currentX, chainHeight, currentZ))
+    }
+    
+    setTxPath(path)
+  }, [chainHeight, spacing])
   
-  // Animate transaction pulse along the line
+  // Animate transaction pulse along the complex path
   useFrame((state) => {
-    if (txRef.current) {
-      // Calculate position along the line based on time
-      const t = (Math.sin(state.clock.elapsedTime * 2) + 1) / 2 // Oscillates between 0 and 1
+    if (txRef.current && txPath.length > 0) {
+      // Calculate position along the entire path based on time
+      const t = (Math.sin(state.clock.elapsedTime * 1.5) + 1) / 2 // Oscillates between 0 and 1
       
-      // Interpolate position between the two nodes
-      txRef.current.position.x = node1Pos[0] + (node2Pos[0] - node1Pos[0]) * t
-      txRef.current.position.y = node1Pos[1] + (node2Pos[1] - node1Pos[1]) * t
-      txRef.current.position.z = node1Pos[2] + (node2Pos[2] - node1Pos[2]) * t
+      // Determine which segment of the path we're on
+      const numSegments = txPath.length - 1
+      const segmentLength = 1 / numSegments
+      const currentSegmentIndex = Math.floor(t / segmentLength)
+      const segmentT = (t % segmentLength) / segmentLength
+      
+      if (currentSegmentIndex < numSegments) {
+        const from = txPath[currentSegmentIndex]
+        const to = txPath[Math.min(currentSegmentIndex + 1, txPath.length - 1)]
+        
+        // Interpolate position between current segment points
+        txRef.current.position.x = from.x + (to.x - from.x) * segmentT
+        txRef.current.position.y = from.y + (to.y - from.y) * segmentT
+        txRef.current.position.z = from.z + (to.z - from.z) * segmentT
+      }
       
       // Pulse the size
-      const scale = 0.3 + Math.sin(state.clock.elapsedTime * 8) * 0.1
+      const scale = 0.4 + Math.sin(state.clock.elapsedTime * 8) * 0.15
       txRef.current.scale.set(scale, scale, scale)
     }
   })
@@ -358,12 +411,11 @@ function MeshNetwork() {
           for (let j = 0; j < gridSize; j++) {
             const x = -extent + i * spacing;
             const z = -extent + j * spacing;
-            // Make two specific nodes white for transaction visualization
-            const isSpecialNode = (i === 5 && j === 8) || (i === 18 && j === 16);
+            // All nodes are black (no special white nodes needed)
             nodes.push(
               <mesh key={`node-${i}-${j}`} position={[x, 0, z]}>
-                <sphereGeometry args={[isSpecialNode ? 0.5 : 0.2, 8, 8]} />
-                <meshBasicMaterial color={isSpecialNode ? "#ffffff" : "#000000"} />
+                <sphereGeometry args={[0.2, 8, 8]} />
+                <meshBasicMaterial color="#000000" />
               </mesh>
             );
           }
@@ -372,83 +424,297 @@ function MeshNetwork() {
         return [...lines, ...nodes];
       })()}
       
-      {/* Transaction line between the two white nodes */}
-      <Line
-        points={[node1Pos, node2Pos]}
-        color="#00ff00"
-        lineWidth={2}
-        dashed={false}
-      />
+      {/* Grid-based transaction path with 90-degree turns */}
+      {txPath.length > 1 && (
+        <>
+          {/* Draw straight lines between each grid hop */}
+          {txPath.map((point, index) => {
+            if (index < txPath.length - 1) {
+              const nextPoint = txPath[index + 1]
+              return (
+                <Line
+                  key={`path-${index}`}
+                  points={[[point.x, point.y, point.z], [nextPoint.x, nextPoint.y, nextPoint.z]]}
+                  color="#00ff88"
+                  lineWidth={3}
+                  dashed={false}
+                />
+              )
+            }
+            return null
+          })}
+          
+          {/* Show grid nodes at each hop point (except start and end) */}
+          {txPath.slice(1, -1).map((point, index) => (
+            <group key={`hop-${index}`}>
+              {/* Node indicator */}
+              <mesh position={[point.x, point.y, point.z]}>
+                <boxGeometry args={[0.3, 0.3, 0.3]} />
+                <meshBasicMaterial color="#00ffaa" />
+              </mesh>
+              {/* Vertical line connecting to chain below */}
+              <Line
+                points={[[point.x, point.y, point.z], [point.x, 0, point.z]]}
+                color="#00ff8844"
+                lineWidth={1}
+              />
+            </group>
+          ))}
+          
+          {/* Corner indicators for the 90-degree turns */}
+          <mesh position={[txPath[3].x, txPath[3].y, txPath[3].z]}>
+            <sphereGeometry args={[0.25, 8, 8]} />
+            <meshBasicMaterial color="#ffff00" opacity={0.5} transparent />
+          </mesh>
+          <mesh position={[txPath[15].x, txPath[15].y, txPath[15].z]}>
+            <sphereGeometry args={[0.25, 8, 8]} />
+            <meshBasicMaterial color="#ffff00" opacity={0.5} transparent />
+          </mesh>
+        </>
+      )}
+      
+      {/* Alice label at start point */}
+      {txPath.length > 0 && (
+        <>
+          <Text
+            position={[txPath[0].x - 3, txPath[0].y + 2, txPath[0].z]}
+            fontSize={1.8}
+            color="#ff88ff"
+            anchorX="right"
+            anchorY="middle"
+            outlineWidth={0.05}
+            outlineColor="#000000"
+          >
+            Alice
+          </Text>
+          {/* Alice's node marker - larger */}
+          <mesh position={[txPath[0].x, txPath[0].y, txPath[0].z]}>
+            <sphereGeometry args={[0.6, 16, 16]} />
+            <meshBasicMaterial color="#ff88ff" />
+          </mesh>
+        </>
+      )}
+      
+      {/* Bob label at end point */}
+      {txPath.length > 0 && (
+        <>
+          <Text
+            position={[txPath[txPath.length - 1].x + 3, txPath[txPath.length - 1].y + 2, txPath[txPath.length - 1].z]}
+            fontSize={1.8}
+            color="#88ffff"
+            anchorX="left"
+            anchorY="middle"
+            outlineWidth={0.05}
+            outlineColor="#000000"
+          >
+            Bob
+          </Text>
+          {/* Bob's node marker - larger */}
+          <mesh position={[txPath[txPath.length - 1].x, txPath[txPath.length - 1].y, txPath[txPath.length - 1].z]}>
+            <sphereGeometry args={[0.6, 16, 16]} />
+            <meshBasicMaterial color="#88ffff" />
+          </mesh>
+        </>
+      )}
       
       {/* Animated transaction pulse */}
       <mesh ref={txRef}>
-        <sphereGeometry args={[0.4, 16, 16]} />
-        <meshStandardMaterial color="#ffff00" emissive="#ffff00" emissiveIntensity={0.5} />
+        <sphereGeometry args={[0.5, 16, 16]} />
+        <meshStandardMaterial color="#ffff00" emissive="#ffff00" emissiveIntensity={1.0} />
       </mesh>
+      
+      {/* Transaction label that follows the pulse */}
+      <Text
+        position={[0, chainHeight + 3, -20]}
+        fontSize={0.6}
+        color="#ffff00"
+        anchorX="center"
+        anchorY="middle"
+      >
+        P2P Transaction
+      </Text>
     </group>
   );
 }
 
 function MultiChainBlocks() {
   return (
-    <group>
-      {/* 50 mini chains starting from center and splaying outward */}
+    <group position={[0, -24.5, 0]}> {/* Same position as mesh network */}
+      {/* Chains emanating from mesh network nodes */}
       {(() => {
         const chains = [];
-        const numChains = 50;
-        const blockSize = 0.6; // Bigger block size for visibility
-        const blocksPerChain = 30; // Reduced back to shorter chains
-        const gap = 0.3; // Slightly bigger gap for more spread
+        const gridSize = 25; // Same as mesh network
+        const spacing = 5; // Same spacing as mesh network
+        const extent = (gridSize - 1) * spacing / 2;
+        const blockSize = 0.25; // Smaller blocks since we have many more chains
+        const blocksPerChain = 25; // Medium height chains
+        const gap = 0.1; // Smaller gap
         
-        for (let chainIndex = 0; chainIndex < numChains; chainIndex++) {
-          // Each chain starts at center and goes outward at an angle
-          const angle = (chainIndex / numChains) * Math.PI * 2;
-          const baseY = -23; // Start just above pie chart
-          
-          // Create a chain of blocks going outward and upward from center
-          const chain = [];
-          for (let blockIndex = 0; blockIndex < blocksPerChain; blockIndex++) {
-            // Start from center (0,0) and move outward - faster spread
-            const distance = blockIndex * (blockSize + gap) * 1.5; // 1.5x multiplier for wider spread
-            const x = Math.cos(angle) * distance;
-            const z = Math.sin(angle) * distance;
-            const y = baseY + (blockIndex * 0.8); // Much steeper upward angle
+        // Pie chart outer radius is 34.5 units (from the cylinderGeometry)
+        // With mesh spacing of 5 units, we want chains from nodes within this radius
+        const pieRadius = 35;
+        
+        let chainIndex = 0;
+        
+        // Create chains from EVERY node that's above the pie chart
+        for (let i = 0; i < gridSize; i++) {
+          for (let j = 0; j < gridSize; j++) {
+            // Calculate exact node position on mesh (matching MeshNetwork component)
+            const nodeX = -extent + i * spacing;
+            const nodeZ = -extent + j * spacing;
             
-            // Color based on distance from center - rainbow gradient
-            const colorProgress = blockIndex / (blocksPerChain - 1);
+            // Check if this node is above the pie chart (within pie radius)
+            const distanceFromCenter = Math.sqrt(nodeX * nodeX + nodeZ * nodeZ);
+            if (distanceFromCenter > pieRadius) {
+              continue; // Skip nodes outside the pie chart area
+            }
             
-            chain.push(
-              <group key={`block-${blockIndex}`}>
-                <mesh position={[x, y, z]}>
-                  <boxGeometry args={[blockSize, blockSize, blockSize]} />
-                  <meshBasicMaterial
-                    color={`hsl(${240 - (colorProgress * 240)}, 100%, 60%)`}
-                  />
-                </mesh>
-                {/* Glow effect */}
-                <mesh position={[x, y, z]}>
-                  <boxGeometry args={[blockSize * 1.1, blockSize * 1.1, blockSize * 1.1]} />
-                  <meshBasicMaterial
-                    color={`hsl(${240 - (colorProgress * 240)}, 100%, 70%)`}
-                    transparent
-                    opacity={0.3}
-                  />
-                </mesh>
+            const baseY = 0.3; // Start slightly above mesh node sphere
+            
+            // Create only 1 chain from each node
+            const chain = [];
+            
+            // Add very slight random variation for organic look
+            const angleVariation = (Math.random() - 0.5) * 0.05;
+            
+            for (let blockIndex = 0; blockIndex < blocksPerChain; blockIndex++) {
+              // Chains go straight up with minimal drift
+              const spread = blockIndex * 0.01 * angleVariation; // Very minimal spread
+              const x = nodeX + spread;
+              const z = nodeZ + spread * 0.5;
+              const y = baseY + (blockIndex * (blockSize + gap)); // Direct vertical growth
+              
+              // Color based on height - rainbow gradient
+              const colorProgress = blockIndex / (blocksPerChain - 1);
+              
+              chain.push(
+                <group key={`block-${blockIndex}`}>
+                  <mesh position={[x, y, z]}>
+                    <boxGeometry args={[blockSize, blockSize, blockSize]} />
+                    <meshBasicMaterial
+                      color={`hsl(${120 + (colorProgress * 240)}, 100%, 60%)`}
+                    />
+                  </mesh>
+                  {/* Subtle glow effect for first few blocks only */}
+                  {blockIndex < 5 && (
+                    <mesh position={[x, y, z]}>
+                      <boxGeometry args={[blockSize * 1.1, blockSize * 1.1, blockSize * 1.1]} />
+                      <meshBasicMaterial
+                        color={`hsl(${120 + (colorProgress * 240)}, 100%, 70%)`}
+                        transparent
+                        opacity={0.15}
+                      />
+                    </mesh>
+                  )}
+                </group>
+              );
+            }
+            
+            chains.push(
+              <group key={`chain-${chainIndex++}`}>
+                {chain}
               </group>
             );
           }
-          
-          chains.push(
-            <group key={`chain-${chainIndex}`}>
-              {chain}
-            </group>
-          );
         }
         
         return chains;
       })()}
     </group>
   );
+}
+
+function AnimatedCentralChain() {
+  const blocksRef = useRef<THREE.Group>(null)
+  
+  useFrame((state) => {
+    if (blocksRef.current) {
+      // Animate blocks moving down slowly through Earth's center
+      blocksRef.current.position.y -= 0.1  // Much slower movement
+      
+      // Reset when blocks go too far down
+      if (blocksRef.current.position.y < -200) {
+        blocksRef.current.position.y = 0  // Reset to starting position
+      }
+    }
+  })
+  
+  return (
+    <group ref={blocksRef}>
+      {/* Use the EXACT SAME chain as BSV tab - just animated */}
+      {(() => {
+        const blocks = [];
+        const totalBlocks = 1000; // 10x more blocks
+        const maxSize = 10000; // BSV: 10GB theoretical max
+        
+        // Only render first 50 blocks for visibility
+        const visibleBlocks = 50;
+        
+        for (let i = 0; i < visibleBlocks; i++) {
+          // Progress from 0 to 1 across visible blocks
+          const progress = i / (visibleBlocks - 1);
+          
+          // BSV: exponential growth - start at 1MB, grow to massive sizes
+          const size = Math.round(1 + Math.pow(progress * 10, 2.5) * 1000); // 1MB to 10GB+
+          
+          // Visual scaling - smaller blocks at start, massive at end
+          const visualScale = 1 + progress * 20; // Scale from 1 to 21
+          const clampedScale = Math.min(30.0, visualScale);
+
+          // Calculate position with increasing gaps for larger blocks
+          const baseGap = 1.5; // Base separation
+          const gap = baseGap + (progress * 3); // Gaps increase with size
+          let y = -25; // Start AT pie chart center
+          
+          for (let j = 0; j < i; j++) {
+            const prevProgress = j / (visibleBlocks - 1);
+            const prevVisualScale = 1 + prevProgress * 20;
+            const prevClampedScale = Math.min(30.0, prevVisualScale);
+            const prevGap = baseGap + (prevProgress * 3);
+            y += prevClampedScale + prevGap;
+          }
+          
+          // Color gradient - FORCE blue to red progression
+          const hue = 240 - (progress * 240); // Blue (240) at start to Red (0) at end
+          
+          // Progressive transparency - more transparent as blocks get bigger
+          const opacity = Math.max(0.1, 1 - (progress * 0.8)); // From 1.0 to 0.2
+          
+          blocks.push(
+            <group key={`block-${i}`} position={[0, y, 0]}>
+              <mesh>
+                <boxGeometry args={[clampedScale, clampedScale, clampedScale]} />
+                <meshStandardMaterial
+                  color={`hsl(${hue}, 90%, 50%)`}
+                  emissive={`hsl(${hue}, 100%, 40%)`}
+                  emissiveIntensity={0.3 + progress * 0.5}
+                  metalness={0.4}
+                  roughness={0.1}
+                  transparent={true}
+                  opacity={opacity}
+                />
+              </mesh>
+              {/* Size labels for every 10th block */}
+              {(i % 10 === 0 || i === visibleBlocks - 1) && (
+                <Text
+                  position={[clampedScale + 2, 0, 0]}
+                  fontSize={0.5 + progress * 0.5}
+                  color={`hsl(${hue}, 90%, 70%)`}
+                  anchorX="left"
+                  transparent
+                  opacity={Math.max(0.5, opacity + 0.3)}
+                >
+                  {size >= 1000 ? `${(size/1000).toFixed(1)}GB` : `${size}MB`}
+                </Text>
+              )}
+            </group>
+          );
+        }
+        
+        return blocks
+      })()}
+    </group>
+  )
 }
 
 function BlockchainBlocks({ viewMode }: { viewMode: string }) {
@@ -611,13 +877,13 @@ function BlockchainBlocks({ viewMode }: { viewMode: string }) {
 
 export default function BlockchainVisualizer() {
   const controlsRef = useRef<OrbitControlsType | null>(null)
-  const [viewMode, setViewMode] = React.useState<'single' | 'multi' | 'play'>('single')
+  const [viewMode, setViewMode] = React.useState<'single' | 'multi' | 'play' | 'single+' | 'multi+' | 'play+'>('single')
   const [bsvMiningPools, setBsvMiningPools] = useState<MiningPool[]>(fallbackBSVPools)
   const [isLoadingPools, setIsLoadingPools] = useState(false)
 
   // Fetch BSV mining pool data when component mounts or viewMode changes
   useEffect(() => {
-    if (viewMode === 'single') {
+    if (viewMode === 'single' || viewMode === 'single+') {
       setIsLoadingPools(true)
       getBSVMiningPools()
         .then(pools => {
@@ -645,7 +911,7 @@ export default function BlockchainVisualizer() {
     <div className="w-full h-screen relative pl-96" style={{ background: 'linear-gradient(135deg, #000000 0%, #0a0a0a 100%)' }}>
 
       <Canvas
-        camera={{ position: [0, 10, 80], fov: 55 }}
+        camera={{ position: [0, 10, 70], fov: 50 }}
         onCreated={({ gl }) => {
           // Ensure canvas doesn't capture keyboard events
           gl.domElement.tabIndex = -1;
@@ -656,7 +922,14 @@ export default function BlockchainVisualizer() {
         {viewMode === 'multi' && <BlockchainBlocks viewMode={viewMode} />}
         {viewMode === 'play' && (
           <>
-            <BlockchainBlocks viewMode={viewMode} />
+            <MultiChainBlocks />
+            <MeshNetwork />
+          </>
+        )}
+        {viewMode === 'single+' && <AnimatedCentralChain />}
+        {viewMode === 'multi+' && <BlockchainBlocks viewMode={'multi'} />}
+        {viewMode === 'play+' && (
+          <>
             <MultiChainBlocks />
             <MeshNetwork />
           </>
@@ -683,20 +956,20 @@ export default function BlockchainVisualizer() {
       </Canvas>
 
       {/* FULL LEFT SIDE Mining Pool Information Panel */}
-      <div className="absolute top-0 left-0 w-96 h-full bg-black/95 backdrop-blur-md p-4 text-white font-mono text-xs border-r border-blue-500/30 overflow-y-auto">
+      <div className="absolute top-0 left-0 w-96 h-full bg-black/95 backdrop-blur-md p-3 text-white font-mono text-xs border-r border-blue-500/30 overflow-y-auto">
         <h3 className="text-blue-400 font-bold mb-3 flex items-center gap-2 text-sm">
-          ⛏️ {viewMode === 'single' ? 'BSV NODE NETWORK' : 'BTC MINING POOLS'}
+          ⛏️ {viewMode === 'single' || viewMode === 'single+' ? 'BSV NODE NETWORK' : viewMode === 'play' || viewMode === 'play+' ? 'FANTASY NETWORK' : 'BTC MINING POOLS'}
         </h3>
 
         {/* Total Hash Rate */}
         <div className="mb-3 p-2 bg-blue-900/30 rounded border border-blue-500/20">
           <div className="text-cyan-400 font-bold text-sm">🌐 TOTAL NETWORK</div>
-          <div className="text-yellow-400 text-lg font-bold">{viewMode === 'single' ? '~2.5 EH/s' : '~680 EH/s'}</div>
+          <div className="text-yellow-400 text-lg font-bold">{viewMode === 'single' || viewMode === 'single+' ? '~2.5 EH/s' : viewMode === 'play' || viewMode === 'play+' ? 'DISTRIBUTED' : '~680 EH/s'}</div>
         </div>
 
         {/* All Pools - sized proportionally with harmonious colors */}
         <div className="space-y-1">
-          {viewMode === 'single' ? (
+          {viewMode === 'single' || viewMode === 'single+' ? (
             <>
               {/* Dynamic BSV Pools */}
               {isLoadingPools && (
@@ -878,44 +1151,88 @@ export default function BlockchainVisualizer() {
       </div>
 
       {/* View Mode Toggle - Top Center */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/90 backdrop-blur-md p-2 rounded-lg border border-[#00ff88]/30 flex gap-2">
-        <button
-          onClick={() => setViewMode('single')}
-          className={`px-3 py-2 rounded text-[#00ff88] font-mono text-xs border transition-all cursor-pointer ${
-            viewMode === 'single' 
-              ? 'bg-[#00ff88]/30 border-[#00ff88]/50' 
-              : 'border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50'
-          }`}
-          title="Bitcoin SV - Unbounded blocks"
-        >
-          ⛓️ BSV
-        </button>
-        <button
-          onClick={() => setViewMode('multi')}
-          className={`px-3 py-2 rounded text-[#00ff88] font-mono text-xs border transition-all cursor-pointer ${
-            viewMode === 'multi' 
-              ? 'bg-[#00ff88]/30 border-[#00ff88]/50' 
-              : 'border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50'
-          }`}
-          title="Bitcoin Core - Limited blocks"
-        >
-          🔗 BTC
-        </button>
-        <button
-          onClick={() => setViewMode('play')}
-          className={`px-3 py-2 rounded text-[#00ff88] font-mono text-xs border transition-all cursor-pointer ${
-            viewMode === 'play' 
-              ? 'bg-[#00ff88]/30 border-[#00ff88]/50' 
-              : 'border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50'
-          }`}
-          title="Fantasy view"
-        >
-          🎮 Fantasy
-        </button>
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/90 backdrop-blur-md p-2 rounded-lg border border-[#00ff88]/30 flex gap-1" style={{ maxWidth: '600px' }}>
+        {/* BSV Group */}
+        <div className="flex gap-1 pr-2 border-r border-[#00ff88]/20">
+          <button
+            onClick={() => setViewMode('single')}
+            className={`px-3 py-2 rounded text-[#00ff88] font-mono text-xs border transition-all cursor-pointer ${
+              viewMode === 'single' 
+                ? 'bg-[#00ff88]/30 border-[#00ff88]/50' 
+                : 'border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50'
+            }`}
+            title="Bitcoin SV - Unbounded blocks"
+          >
+            BSV
+          </button>
+          <button
+            onClick={() => setViewMode('single+')}
+            className={`px-3 py-2 rounded text-[#00ff88] font-mono text-xs border transition-all cursor-pointer ${
+              viewMode === 'single+' 
+                ? 'bg-[#00ff88]/30 border-[#00ff88]/50' 
+                : 'border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50'
+            }`}
+            title="BSV+ - Animated through Earth"
+          >
+            BSV+
+          </button>
+        </div>
+        
+        {/* BTC Group */}
+        <div className="flex gap-1 px-2 border-r border-[#00ff88]/20">
+          <button
+            onClick={() => setViewMode('multi')}
+            className={`px-3 py-2 rounded text-[#00ff88] font-mono text-xs border transition-all cursor-pointer ${
+              viewMode === 'multi' 
+                ? 'bg-[#00ff88]/30 border-[#00ff88]/50' 
+                : 'border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50'
+            }`}
+            title="Bitcoin Core - Limited blocks"
+          >
+            BTC
+          </button>
+          <button
+            onClick={() => setViewMode('multi+')}
+            className={`px-3 py-2 rounded text-[#00ff88] font-mono text-xs border transition-all cursor-pointer ${
+              viewMode === 'multi+' 
+                ? 'bg-[#00ff88]/30 border-[#00ff88]/50' 
+                : 'border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50'
+            }`}
+            title="BTC+ - Enhanced view"
+          >
+            BTC+
+          </button>
+        </div>
+        
+        {/* Fantasy Group */}
+        <div className="flex gap-1 pl-2">
+          <button
+            onClick={() => setViewMode('play')}
+            className={`px-3 py-2 rounded text-[#00ff88] font-mono text-xs border transition-all cursor-pointer ${
+              viewMode === 'play' 
+                ? 'bg-[#00ff88]/30 border-[#00ff88]/50' 
+                : 'border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50'
+            }`}
+            title="Fantasy view"
+          >
+            Fantasy
+          </button>
+          <button
+            onClick={() => setViewMode('play+')}
+            className={`px-3 py-2 rounded text-[#00ff88] font-mono text-xs border transition-all cursor-pointer ${
+              viewMode === 'play+' 
+                ? 'bg-[#00ff88]/30 border-[#00ff88]/50' 
+                : 'border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50'
+            }`}
+            title="Fantasy+ - Enhanced fantasy"
+          >
+            Fantasy+
+          </button>
+        </div>
       </div>
 
-      {/* Reset Button - Bottom Right */}
-      <div className="absolute bottom-4 right-4 bg-black/90 backdrop-blur-md p-2 rounded-lg border border-[#00ff88]/30">
+      {/* Reset Button - Moved higher */}
+      <div className="absolute bottom-20 right-4 bg-black/90 backdrop-blur-md p-2 rounded-lg border border-[#00ff88]/30">
         <button
           onClick={resetView}
           className="px-3 py-2 rounded text-[#00ff88] font-mono text-xs border border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50 transition-all cursor-pointer"
