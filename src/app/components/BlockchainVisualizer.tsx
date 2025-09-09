@@ -654,8 +654,9 @@ function AnimatedCentralChain() {
           // Progress from 0 to 1 across visible blocks
           const progress = i / (visibleBlocks - 1);
           
-          // BSV: exponential growth - start at 1MB, grow to massive sizes
-          const size = Math.round(1 + Math.pow(progress * 10, 2.5) * 1000); // 1MB to 10GB+
+          // BSV: LINEAR progression from 1MB to 1PB
+          // 1MB = 1, 1GB = 1000, 1TB = 1,000,000, 1PB = 1,000,000,000
+          const size = Math.round(1 + progress * 1000000000); // Linear from 1MB to 1PB
           
           // Visual scaling - smaller blocks at start, massive at end
           const visualScale = 1 + progress * 20; // Scale from 1 to 21
@@ -694,19 +695,20 @@ function AnimatedCentralChain() {
                   opacity={opacity}
                 />
               </mesh>
-              {/* Size labels for every 10th block */}
-              {(i % 10 === 0 || i === visibleBlocks - 1) && (
-                <Text
-                  position={[clampedScale + 2, 0, 0]}
-                  fontSize={0.5 + progress * 0.5}
-                  color={`hsl(${hue}, 90%, 70%)`}
-                  anchorX="left"
-                  transparent
-                  opacity={Math.max(0.5, opacity + 0.3)}
-                >
-                  {size >= 1000 ? `${(size/1000).toFixed(1)}GB` : `${size}MB`}
-                </Text>
-              )}
+              {/* Size labels for every block */}
+              <Text
+                position={[clampedScale + 2, 0, 0]}
+                fontSize={0.4 + progress * 0.4}
+                color={`hsl(${hue}, 90%, 70%)`}
+                anchorX="left"
+                transparent
+                opacity={Math.max(0.6, opacity + 0.3)}
+              >
+                {size >= 1000000000 ? `${(size/1000000000).toFixed(0)}PB` : 
+                 size >= 1000000 ? `${(size/1000000).toFixed(0)}TB` : 
+                 size >= 1000 ? `${(size/1000).toFixed(0)}GB` : 
+                 `${size}MB`}
+              </Text>
             </group>
           );
         }
