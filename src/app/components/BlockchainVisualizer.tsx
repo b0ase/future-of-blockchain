@@ -654,13 +654,13 @@ function AnimatedCentralChain() {
           // Progress from 0 to 1 across visible blocks
           const progress = i / (visibleBlocks - 1);
           
-          // BSV: LINEAR progression from 1MB to 1PB
-          // 1MB = 1, 1GB = 1000, 1TB = 1,000,000, 1PB = 1,000,000,000
-          const size = Math.round(1 + progress * 1000000000); // Linear from 1MB to 1PB
+          // BSV: Exponential doubling - start at 1MB and double each block
+          // 1MB, 2MB, 4MB, 8MB, 16MB, 32MB, 64MB, 128MB, 256MB, 512MB, 1GB, 2GB, 4GB...
+          const size = Math.pow(2, i); // Start at 1MB (2^0=1) and double each time
           
-          // Visual scaling - smaller blocks at start, massive at end
-          const visualScale = 1 + progress * 20; // Scale from 1 to 21
-          const clampedScale = Math.min(30.0, visualScale);
+          // Visual scaling - based on log of size for manageable visual growth
+          const visualScale = Math.log2(size + 1) * 0.5 + 1; // Logarithmic scaling
+          const clampedScale = Math.min(15.0, visualScale); // Cap at reasonable size
 
           // Calculate position with increasing gaps for larger blocks
           const baseGap = 1.5; // Base separation
@@ -668,9 +668,10 @@ function AnimatedCentralChain() {
           let y = -25; // Start AT pie chart center
           
           for (let j = 0; j < i; j++) {
+            const prevSize = Math.pow(2, j);
+            const prevVisualScale = Math.log2(prevSize + 1) * 0.5 + 1;
+            const prevClampedScale = Math.min(15.0, prevVisualScale);
             const prevProgress = j / (visibleBlocks - 1);
-            const prevVisualScale = 1 + prevProgress * 20;
-            const prevClampedScale = Math.min(30.0, prevVisualScale);
             const prevGap = baseGap + (prevProgress * 3);
             y += prevClampedScale + prevGap;
           }
@@ -704,10 +705,89 @@ function AnimatedCentralChain() {
                 transparent
                 opacity={Math.max(0.6, opacity + 0.3)}
               >
-                {size >= 1000000000 ? `${(size/1000000000).toFixed(0)}PB` : 
-                 size >= 1000000 ? `${(size/1000000).toFixed(0)}TB` : 
-                 size >= 1000 ? `${(size/1000).toFixed(0)}GB` : 
+                {size >= 1099511627776 ? `${(size/1099511627776).toFixed(0)}TB` : // 2^40 MB = 1TB (in MB)
+                 size >= 1073741824 ? `${(size/1073741824).toFixed(0)}GB` : // 2^30 MB = 1GB (in MB) 
+                 size >= 1048576 ? `${(size/1048576).toFixed(0)}MB` : // 2^20 MB = 1MB (wrong - fixing)
+                 size >= 1024 ? `${(size/1024).toFixed(1)}GB` : // 1024MB = 1GB
                  `${size}MB`}
+              </Text>
+            </group>
+          );
+        }
+        
+        return blocks
+      })()}
+    </group>
+  )
+}
+
+function AnimatedBTCChain() {
+  const blocksRef = useRef<THREE.Group>(null)
+  
+  useFrame((state) => {
+    if (blocksRef.current) {
+      // Animate blocks moving down slowly through Earth's center
+      blocksRef.current.position.y -= 0.1  // Same slow movement as BSV+
+      
+      // Reset when blocks go too far down
+      if (blocksRef.current.position.y < -200) {
+        blocksRef.current.position.y = 0  // Reset to starting position
+      }
+    }
+  })
+  
+  return (
+    <group ref={blocksRef}>
+      {/* BTC+ chain - 10x more blocks, all 1MB, all blue */}
+      {(() => {
+        const blocks = [];
+        const visibleBlocks = 500; // 10x extension
+        
+        for (let i = 0; i < visibleBlocks; i++) {
+          // All blocks are exactly 1MB
+          const size = 1; // Always 1MB
+          
+          // All blocks same size
+          const blockScale = 1.0;
+          
+          // Calculate position with uniform gaps
+          const gap = 0.5;
+          let y = -25; // Start AT pie chart center (same as BSV+)
+          
+          for (let j = 0; j < i; j++) {
+            y += blockScale + gap;
+          }
+          
+          // All blocks are blue
+          const hue = 240; // Blue
+          
+          // Slight transparency for depth
+          const opacity = 0.8;
+          
+          blocks.push(
+            <group key={`block-${i}`} position={[0, y, 0]}>
+              <mesh>
+                <boxGeometry args={[blockScale, blockScale, blockScale]} />
+                <meshStandardMaterial
+                  color={`hsl(${hue}, 90%, 50%)`}
+                  emissive={`hsl(${hue}, 100%, 40%)`}
+                  emissiveIntensity={0.4}
+                  metalness={0.4}
+                  roughness={0.1}
+                  transparent={true}
+                  opacity={opacity}
+                />
+              </mesh>
+              {/* Size label for every block */}
+              <Text
+                position={[blockScale + 1, 0, 0]}
+                fontSize={0.3}
+                color="#0099ff"
+                anchorX="left"
+                transparent
+                opacity={0.8}
+              >
+                1MB
               </Text>
             </group>
           );
@@ -882,6 +962,7 @@ export default function BlockchainVisualizer() {
   const [viewMode, setViewMode] = React.useState<'single' | 'multi' | 'play' | 'single+' | 'multi+' | 'play+'>('single')
   const [bsvMiningPools, setBsvMiningPools] = useState<MiningPool[]>(fallbackBSVPools)
   const [isLoadingPools, setIsLoadingPools] = useState(false)
+  const [animationKey, setAnimationKey] = useState(0) // Key to force re-render animations
 
   // Fetch BSV mining pool data when component mounts or viewMode changes
   useEffect(() => {
@@ -928,8 +1009,8 @@ export default function BlockchainVisualizer() {
             <MeshNetwork />
           </>
         )}
-        {viewMode === 'single+' && <AnimatedCentralChain />}
-        {viewMode === 'multi+' && <BlockchainBlocks viewMode={'multi'} />}
+        {viewMode === 'single+' && <AnimatedCentralChain key={`bsv-${animationKey}`} />}
+        {viewMode === 'multi+' && <AnimatedBTCChain key={`btc-${animationKey}`} />}
         {viewMode === 'play+' && (
           <>
             <MultiChainBlocks />
@@ -1233,14 +1314,38 @@ export default function BlockchainVisualizer() {
         </div>
       </div>
 
-      {/* Reset Button - Moved higher */}
-      <div className="absolute bottom-20 right-4 bg-black/90 backdrop-blur-md p-2 rounded-lg border border-[#00ff88]/30">
+      {/* Control Buttons - Moved higher */}
+      <div className="absolute bottom-20 right-4 bg-black/90 backdrop-blur-md p-2 rounded-lg border border-[#00ff88]/30 space-y-2">
+        <button
+          onClick={() => {
+            // Zoom out to show whole scene from side (90 degree horizontal angle)
+            if (controlsRef.current) {
+              controlsRef.current.object.position.set(200, 50, 0);
+              controlsRef.current.object.lookAt(0, 0, 0);
+              controlsRef.current.update();
+            }
+          }}
+          className="w-full px-3 py-2 rounded text-[#00ff88] font-mono text-xs border border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50 transition-all cursor-pointer"
+          title="Zoom out to see full scene"
+        >
+          🔍 Zoom Out
+        </button>
+        <button
+          onClick={() => {
+            // Restart animation by incrementing the key
+            setAnimationKey(prev => prev + 1);
+          }}
+          className="w-full px-3 py-2 rounded text-[#00ff88] font-mono text-xs border border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50 transition-all cursor-pointer"
+          title="Restart animation"
+        >
+          ⏮️ Restart Animation
+        </button>
         <button
           onClick={resetView}
-          className="px-3 py-2 rounded text-[#00ff88] font-mono text-xs border border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50 transition-all cursor-pointer"
+          className="w-full px-3 py-2 rounded text-[#00ff88] font-mono text-xs border border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50 transition-all cursor-pointer"
           title="Reset view"
         >
-          🔄 Reset
+          🔄 Reset View
         </button>
       </div>
 
