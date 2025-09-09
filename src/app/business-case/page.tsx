@@ -39,17 +39,17 @@ export default function BusinessCase() {
   ]
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-black">
       {/* Hero Section */}
-      <section className="bg-white border-b border-gray-200">
+      <section className="bg-gray-950 border-b border-gray-800">
         <div className="container mx-auto px-6 py-16">
           <div className="max-w-4xl mx-auto text-center">
             <div className="mb-8">
-              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
+              <h1 className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
                 The Business Case for<br />
                 <span className="text-orange-600">Bitcoin SV</span>
               </h1>
-              <p className="text-xl text-gray-600 mb-8 leading-relaxed">
+              <p className="text-xl text-gray-400 mb-8 leading-relaxed">
                 Evidence-based analysis demonstrating why Bitcoin SV represents the optimal choice 
                 for enterprises building the future of blockchain solutions.
               </p>
@@ -63,8 +63,14 @@ export default function BusinessCase() {
                 View Business Analysis
               </a>
               <a 
+                href="/build" 
+                className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+              >
+                BSV Presentation
+              </a>
+              <a 
                 href="/" 
-                className="border border-gray-300 text-gray-700 px-8 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
+                className="border border-gray-700 text-gray-300 px-8 py-3 rounded-lg font-semibold hover:bg-gray-800 transition-colors"
               >
                 Back to Research
               </a>
@@ -74,9 +80,9 @@ export default function BusinessCase() {
       </section>
 
       {/* Executive Summary */}
-      <section className="py-12 bg-orange-50">
+      <section className="py-12 bg-gray-900">
         <div className="container mx-auto px-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">Executive Summary</h2>
+          <h2 className="text-2xl font-bold text-white mb-8 text-center">Executive Summary</h2>
           <div className="grid md:grid-cols-4 gap-6">
             <div className="metric-highlight bg-orange-600">
               <div className="text-2xl font-bold">155,000x</div>
@@ -99,14 +105,14 @@ export default function BusinessCase() {
       </section>
 
       {/* Business Thesis */}
-      <section id="analysis" className="py-16 bg-white">
+      <section id="analysis" className="py-16 bg-gray-950">
         <div className="container mx-auto px-6">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Business Thesis</h2>
+            <h2 className="text-3xl font-bold text-white mb-8 text-center">Business Thesis</h2>
             
             <div className="research-section">
-              <h3 className="text-xl font-semibold text-gray-900 mb-6">The Enterprise Blockchain Imperative</h3>
-              <p className="text-gray-600 mb-6 leading-relaxed">
+              <h3 className="text-xl font-semibold text-white mb-6">The Enterprise Blockchain Imperative</h3>
+              <p className="text-gray-400 mb-6 leading-relaxed">
                 Based on our comprehensive research analysis, Bitcoin SV (BSV) emerges as the superior 
                 blockchain platform for enterprise applications. While Bitcoin Core (BTC) excels as a 
                 store of value, its technical limitations make it unsuitable for high-volume business operations.
@@ -115,7 +121,7 @@ export default function BusinessCase() {
               <div className="grid md:grid-cols-2 gap-8">
                 <div className="data-card border-red-200 bg-red-50">
                   <h4 className="font-semibold text-red-600 mb-3">Bitcoin Core (BTC) Business Limitations</h4>
-                  <ul className="text-sm text-gray-600 space-y-2">
+                  <ul className="text-sm text-gray-400 space-y-2">
                     <li>• 1MB block size limit (7 TPS)</li>
                     <li>• $15+ average transaction fees</li>
                     <li>• 10+ minute confirmation times</li>
@@ -126,7 +132,7 @@ export default function BusinessCase() {
                 
                 <div className="data-card border-green-200 bg-green-50">
                   <h4 className="font-semibold text-green-600 mb-3">Bitcoin SV (BSV) Business Advantages</h4>
-                  <ul className="text-sm text-gray-600 space-y-2">
+                  <ul className="text-sm text-gray-400 space-y-2">
                     <li>• Unlimited block size (100,000+ TPS)</li>
                     <li>• $0.0001 average transaction fees</li>
                     <li>• Instant transaction confirmations</li>
@@ -141,9 +147,9 @@ export default function BusinessCase() {
       </section>
 
       {/* Business Metrics */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-gray-900">
         <div className="container mx-auto px-6">
-          <h2 className="text-3xl font-bold text-gray-900 mb-12 text-center">Business Impact Analysis</h2>
+          <h2 className="text-3xl font-bold text-white mb-12 text-center">Business Impact Analysis</h2>
           
           <div className="grid lg:grid-cols-2 gap-8 mb-12">
             <DataChart
@@ -183,12 +189,12 @@ export default function BusinessCase() {
       <section className="py-16 bg-white">
         <div className="container mx-auto px-6">
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl font-bold text-gray-900 mb-12 text-center">Enterprise Use Case Analysis</h2>
+            <h2 className="text-3xl font-bold text-white mb-12 text-center">Enterprise Use Case Analysis</h2>
             
             <div className="grid md:grid-cols-3 gap-8">
               <div className="data-card">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Global Payments</h3>
-                <div className="space-y-3 text-sm text-gray-600">
+                <h3 className="text-lg font-semibold text-white mb-4">Global Payments</h3>
+                <div className="space-y-3 text-sm text-gray-400">
                   <div className="flex justify-between">
                     <span>BSV Cost:</span>
                     <span className="font-medium text-green-600">$0.0001</span>
@@ -206,16 +212,16 @@ export default function BusinessCase() {
                     <span className="font-medium text-red-600">10+ minutes</span>
                   </div>
                 </div>
-                <div className="mt-4 p-3 bg-green-50 rounded border border-green-200">
-                  <p className="text-sm text-green-800">
+                <div className="mt-4 p-3 bg-green-900/20 rounded border border-green-800">
+                  <p className="text-sm text-green-400">
                     <strong>Business Impact:</strong> BSV enables micro-payments and high-volume transactions impossible on BTC.
                   </p>
                 </div>
               </div>
               
               <div className="data-card">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Data Storage</h3>
-                <div className="space-y-3 text-sm text-gray-600">
+                <h3 className="text-lg font-semibold text-white mb-4">Data Storage</h3>
+                <div className="space-y-3 text-sm text-gray-400">
                   <div className="flex justify-between">
                     <span>BSV Capacity:</span>
                     <span className="font-medium text-green-600">Unlimited</span>
@@ -233,16 +239,16 @@ export default function BusinessCase() {
                     <span className="font-medium text-red-600">$15+/KB</span>
                   </div>
                 </div>
-                <div className="mt-4 p-3 bg-green-50 rounded border border-green-200">
-                  <p className="text-sm text-green-800">
+                <div className="mt-4 p-3 bg-green-900/20 rounded border border-green-800">
+                  <p className="text-sm text-green-400">
                     <strong>Business Impact:</strong> BSV enables enterprise data applications impossible on BTC.
                   </p>
                 </div>
               </div>
               
               <div className="data-card">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Smart Contracts</h3>
-                <div className="space-y-3 text-sm text-gray-600">
+                <h3 className="text-lg font-semibold text-white mb-4">Smart Contracts</h3>
+                <div className="space-y-3 text-sm text-gray-400">
                   <div className="flex justify-between">
                     <span>BSV Script:</span>
                     <span className="font-medium text-green-600">Full Bitcoin Script</span>
@@ -260,8 +266,8 @@ export default function BusinessCase() {
                     <span className="font-medium text-red-600">Lightning Network</span>
                   </div>
                 </div>
-                <div className="mt-4 p-3 bg-green-50 rounded border border-green-200">
-                  <p className="text-sm text-green-800">
+                <div className="mt-4 p-3 bg-green-900/20 rounded border border-green-800">
+                  <p className="text-sm text-green-400">
                     <strong>Business Impact:</strong> BSV provides true on-chain smart contracts as Satoshi intended.
                   </p>
                 </div>
@@ -272,11 +278,11 @@ export default function BusinessCase() {
       </section>
 
       {/* Cost Analysis */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-gray-900">
         <div className="container mx-auto px-6">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Bitcoin Core Cost Escalation</h2>
-            <p className="text-gray-600 mb-8 text-center">
+            <h2 className="text-3xl font-bold text-white mb-8 text-center">Bitcoin Core Cost Escalation</h2>
+            <p className="text-gray-400 mb-8 text-center">
               Bitcoin Core's rising transaction costs make it increasingly unsuitable for enterprise applications.
             </p>
             
@@ -287,9 +293,9 @@ export default function BusinessCase() {
               description="Rising transaction costs impact Bitcoin's business utility"
             />
             
-            <div className="mt-8 p-6 bg-red-50 rounded-lg border border-red-200">
-              <h3 className="text-lg font-semibold text-red-800 mb-3">Business Impact Analysis</h3>
-              <p className="text-red-700 text-sm">
+            <div className="mt-8 p-6 bg-red-900/20 rounded-lg border border-red-800">
+              <h3 className="text-lg font-semibold text-red-400 mb-3">Business Impact Analysis</h3>
+              <p className="text-red-300 text-sm">
                 Bitcoin Core's average transaction fee has increased from $0.50 in 2020 to over $15 in 2024, 
                 representing a 3,000% increase. This makes BTC completely unsuitable for enterprise applications 
                 requiring high transaction volumes or micro-payments, while BSV maintains consistent sub-cent fees.
@@ -300,27 +306,27 @@ export default function BusinessCase() {
       </section>
 
       {/* Investment Recommendation */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-black">
         <div className="container mx-auto px-6">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl font-bold text-gray-900 mb-6">Business Investment Recommendation</h2>
-            <p className="text-xl text-gray-600 mb-8">
+            <h2 className="text-3xl font-bold text-white mb-6">Business Investment Recommendation</h2>
+            <p className="text-xl text-gray-400 mb-8">
               Based on our comprehensive analysis, <strong>Bitcoin SV (BSV)</strong> represents the superior 
               blockchain platform for enterprise applications and long-term business investment.
             </p>
             
             <div className="grid md:grid-cols-3 gap-6 mb-8">
-              <div className="bg-orange-50 p-6 rounded-lg border border-orange-200">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Technical Superiority</h3>
-                <p className="text-sm text-gray-600">Unlimited scalability and micro-transaction capabilities</p>
+              <div className="bg-orange-900/20 p-6 rounded-lg border border-orange-800">
+                <h3 className="text-lg font-semibold text-white mb-2">Technical Superiority</h3>
+                <p className="text-sm text-gray-400">Unlimited scalability and micro-transaction capabilities</p>
               </div>
-              <div className="bg-orange-50 p-6 rounded-lg border border-orange-200">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Economic Efficiency</h3>
-                <p className="text-sm text-gray-600">155,000x lower transaction costs than BTC</p>
+              <div className="bg-orange-900/20 p-6 rounded-lg border border-orange-800">
+                <h3 className="text-lg font-semibold text-white mb-2">Economic Efficiency</h3>
+                <p className="text-sm text-gray-400">155,000x lower transaction costs than BTC</p>
               </div>
-              <div className="bg-orange-50 p-6 rounded-lg border border-orange-200">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Regulatory Clarity</h3>
-                <p className="text-sm text-gray-600">Clear commodity classification for enterprise adoption</p>
+              <div className="bg-orange-900/20 p-6 rounded-lg border border-orange-800">
+                <h3 className="text-lg font-semibold text-white mb-2">Regulatory Clarity</h3>
+                <p className="text-sm text-gray-400">Clear commodity classification for enterprise adoption</p>
               </div>
             </div>
             
@@ -342,11 +348,11 @@ export default function BusinessCase() {
       </section>
 
       {/* Contact Section */}
-      <section id="contact" className="py-16 bg-gray-50">
+      <section id="contact" className="py-16 bg-gray-900">
         <div className="container mx-auto px-6">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl font-bold text-gray-900 mb-6">Get Enterprise Consultation</h2>
-            <p className="text-gray-600 mb-8 text-lg">
+            <h2 className="text-3xl font-bold text-white mb-6">Get Enterprise Consultation</h2>
+            <p className="text-gray-400 mb-8 text-lg">
               Ready to explore Bitcoin SV for your enterprise blockchain needs? 
               Our research team can provide detailed analysis and implementation guidance.
             </p>
@@ -360,7 +366,7 @@ export default function BusinessCase() {
               </a>
               <a 
                 href="/" 
-                className="border border-gray-300 text-gray-700 px-8 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
+                className="border border-gray-700 text-gray-300 px-8 py-3 rounded-lg font-semibold hover:bg-gray-800 transition-colors"
               >
                 View Full Research
               </a>

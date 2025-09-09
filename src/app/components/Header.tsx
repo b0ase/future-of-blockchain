@@ -11,7 +11,7 @@ export default function Header() {
   const isVisualizationPage = pathname === '/visualization'
 
   return (
-    <header className={`${isVisualizationPage ? 'bg-black border-b-2 border-gray-800' : 'academic-nav'} fixed top-0 left-0 right-0 z-50`}>
+    <header className="bg-black border-b-2 border-gray-800 fixed top-0 left-0 right-0 z-50">
       <div className="container mx-auto px-6">
         <div className="flex items-center justify-between h-16">
           {/* Logo and Title */}
@@ -23,28 +23,31 @@ export default function Header() {
                 </svg>
               </div>
               <div>
-                <h1 className={`text-lg font-semibold ${isVisualizationPage ? 'text-white' : 'text-gray-900'}`}>Future of Blockchain</h1>
-                <p className={`text-xs ${isVisualizationPage ? 'text-gray-400' : 'text-gray-500'}`}>Research Initiative</p>
+                <h1 className="text-lg font-semibold text-white">Future of Blockchain</h1>
+                <p className="text-xs text-gray-400">Research Initiative</p>
               </div>
             </div>
           </div>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link href="/" className={`${isVisualizationPage ? 'text-gray-300 hover:text-blue-400' : 'text-gray-700 hover:text-blue-600'} font-medium transition-colors`}>
+            <Link href="/" className="text-gray-300 hover:text-blue-400 font-medium transition-colors">
               Research
             </Link>
-            <Link href="/visualization" className={`${isVisualizationPage ? 'text-gray-300 hover:text-blue-400' : 'text-gray-700 hover:text-blue-600'} font-medium transition-colors`}>
+            <Link href="/visualization" className="text-gray-300 hover:text-blue-400 font-medium transition-colors">
               Visualization
             </Link>
-            <Link href="/business-case" className={`${isVisualizationPage ? 'text-gray-300 hover:text-blue-400' : 'text-gray-700 hover:text-blue-600'} font-medium transition-colors`}>
+            <Link href="/business-case" className="text-gray-300 hover:text-blue-400 font-medium transition-colors">
               Business Case
             </Link>
-            <Link href="/#analysis" className={`${isVisualizationPage ? 'text-gray-300 hover:text-blue-400' : 'text-gray-700 hover:text-blue-600'} font-medium transition-colors`}>
+            <Link href="/#analysis" className="text-gray-300 hover:text-blue-400 font-medium transition-colors">
               Analysis
             </Link>
-            <Link href="/#methodology" className={`${isVisualizationPage ? 'text-gray-300 hover:text-blue-400' : 'text-gray-700 hover:text-blue-600'} font-medium transition-colors`}>
+            <Link href="/#methodology" className="text-gray-300 hover:text-blue-400 font-medium transition-colors">
               Methodology
+            </Link>
+            <Link href="/build" className="text-gray-300 hover:text-blue-400 font-medium transition-colors">
+              Build
             </Link>
           </nav>
 
@@ -53,7 +56,7 @@ export default function Header() {
             {/* Search Button */}
             <button
               onClick={() => setIsSearchOpen(!isSearchOpen)}
-              className={`p-2 ${isVisualizationPage ? 'text-gray-400 hover:text-blue-400' : 'text-gray-500 hover:text-blue-600'} transition-colors`}
+              className="p-2 text-gray-400 hover:text-blue-400 transition-colors"
               aria-label="Search"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -66,7 +69,7 @@ export default function Header() {
               href="https://github.com"
               target="_blank"
               rel="noopener noreferrer"
-              className={`p-2 ${isVisualizationPage ? 'text-gray-400 hover:text-blue-400' : 'text-gray-500 hover:text-blue-600'} transition-colors`}
+              className="p-2 text-gray-400 hover:text-blue-400 transition-colors"
               aria-label="GitHub Repository"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -77,7 +80,7 @@ export default function Header() {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className={`md:hidden p-2 ${isVisualizationPage ? 'text-gray-400 hover:text-blue-400' : 'text-gray-500 hover:text-blue-600'} transition-colors`}
+              className="md:hidden p-2 text-gray-400 hover:text-blue-400 transition-colors"
               aria-label="Toggle menu"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -89,12 +92,12 @@ export default function Header() {
 
         {/* Search Bar */}
         {isSearchOpen && (
-          <div className={`py-4 border-t ${isVisualizationPage ? 'border-gray-700' : 'border-gray-200'}`}>
+          <div className="py-4 border-t border-gray-700">
             <div className="relative">
               <input
                 type="text"
                 placeholder="Search future of blockchain research, analysis, or methodology..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 bg-gray-900 border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
               <svg className="absolute left-3 top-2.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -105,22 +108,25 @@ export default function Header() {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className={`md:hidden py-4 border-t ${isVisualizationPage ? 'border-gray-700' : 'border-gray-200'}`}>
+          <div className="md:hidden py-4 border-t border-gray-700">
             <nav className="flex flex-col space-y-4">
-              <Link href="/" className={`${isVisualizationPage ? 'text-gray-300 hover:text-blue-400' : 'text-gray-700 hover:text-blue-600'} font-medium transition-colors`}>
+              <Link href="/" className="text-gray-300 hover:text-blue-400 font-medium transition-colors">
                 Research
               </Link>
-              <Link href="/visualization" className={`${isVisualizationPage ? 'text-gray-300 hover:text-blue-400' : 'text-gray-700 hover:text-blue-600'} font-medium transition-colors`}>
+              <Link href="/visualization" className="text-gray-300 hover:text-blue-400 font-medium transition-colors">
                 Visualization
               </Link>
-              <Link href="/business-case" className={`${isVisualizationPage ? 'text-gray-300 hover:text-blue-400' : 'text-gray-700 hover:text-blue-600'} font-medium transition-colors`}>
+              <Link href="/business-case" className="text-gray-300 hover:text-blue-400 font-medium transition-colors">
                 Business Case
               </Link>
-              <Link href="/#analysis" className={`${isVisualizationPage ? 'text-gray-300 hover:text-blue-400' : 'text-gray-700 hover:text-blue-600'} font-medium transition-colors`}>
+              <Link href="/#analysis" className="text-gray-300 hover:text-blue-400 font-medium transition-colors">
                 Analysis
               </Link>
-              <Link href="/#methodology" className={`${isVisualizationPage ? 'text-gray-300 hover:text-blue-400' : 'text-gray-700 hover:text-blue-600'} font-medium transition-colors`}>
+              <Link href="/#methodology" className="text-gray-300 hover:text-blue-400 font-medium transition-colors">
                 Methodology
+              </Link>
+              <Link href="/build" className="text-gray-300 hover:text-blue-400 font-medium transition-colors">
+                Build
               </Link>
             </nav>
           </div>

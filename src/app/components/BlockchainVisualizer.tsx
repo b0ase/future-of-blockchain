@@ -7,6 +7,7 @@ import { OrbitControls, Text, Line } from '@react-three/drei'
 import * as THREE from 'three'
 import type { OrbitControls as OrbitControlsType } from 'three-stdlib'
 import { getBSVMiningPools, fallbackBSVPools, type MiningPool } from '@/lib/bsv-mining-api'
+import EnergyUseVisualization from './EnergyUseVisualization'
 
 
 
@@ -473,49 +474,9 @@ function MeshNetwork() {
         </>
       )}
       
-      {/* Alice label at start point */}
-      {txPath.length > 0 && (
-        <>
-          <Text
-            position={[txPath[0].x - 3, txPath[0].y + 2, txPath[0].z]}
-            fontSize={1.8}
-            color="#ff88ff"
-            anchorX="right"
-            anchorY="middle"
-            outlineWidth={0.05}
-            outlineColor="#000000"
-          >
-            Alice
-          </Text>
-          {/* Alice's node marker - larger */}
-          <mesh position={[txPath[0].x, txPath[0].y, txPath[0].z]}>
-            <sphereGeometry args={[0.6, 16, 16]} />
-            <meshBasicMaterial color="#ff88ff" />
-          </mesh>
-        </>
-      )}
+      {/* Alice label removed - using only LightningNetworkRouting version below */}
       
-      {/* Bob label at end point */}
-      {txPath.length > 0 && (
-        <>
-          <Text
-            position={[txPath[txPath.length - 1].x + 3, txPath[txPath.length - 1].y + 2, txPath[txPath.length - 1].z]}
-            fontSize={1.8}
-            color="#88ffff"
-            anchorX="left"
-            anchorY="middle"
-            outlineWidth={0.05}
-            outlineColor="#000000"
-          >
-            Bob
-          </Text>
-          {/* Bob's node marker - larger */}
-          <mesh position={[txPath[txPath.length - 1].x, txPath[txPath.length - 1].y, txPath[txPath.length - 1].z]}>
-            <sphereGeometry args={[0.6, 16, 16]} />
-            <meshBasicMaterial color="#88ffff" />
-          </mesh>
-        </>
-      )}
+      {/* Bob label removed - using only LightningNetworkRouting version below */}
       
       {/* Animated transaction pulse - REMOVED (now using Lightning Network routing) */}
       {/* <mesh ref={txRef}>
@@ -1185,7 +1146,7 @@ function BlockchainBlocks({ viewMode }: { viewMode: string }) {
 
 export default function BlockchainVisualizer() {
   const controlsRef = useRef<OrbitControlsType | null>(null)
-  const [viewMode, setViewMode] = React.useState<'single' | 'multi' | 'play' | 'single+' | 'multi+' | 'play+'>('single+')
+  const [viewMode, setViewMode] = React.useState<'single' | 'multi' | 'play' | 'single+' | 'multi+' | 'play+' | 'energy'>('single+')
   const [bsvMiningPools, setBsvMiningPools] = useState<MiningPool[]>(fallbackBSVPools)
   const [isLoadingPools, setIsLoadingPools] = useState(false)
   const [animationKey, setAnimationKey] = useState(0) // Key to force re-render animations
@@ -1234,34 +1195,134 @@ export default function BlockchainVisualizer() {
   }
 
   return (
-    <div className={`w-full h-screen relative ${isMobile ? '' : 'pl-96'}`} style={{ background: 'linear-gradient(135deg, #000000 0%, #0a0a0a 100%)' }}>
+    <>
+      {/* View Mode Toggle - Always visible at top */}
+      <div className="absolute top-16 left-1/2 -translate-x-1/2 bg-black/90 backdrop-blur-md p-2 rounded-lg border border-[#00ff88]/30 flex gap-1 z-50" style={{ maxWidth: '700px' }}>
+        {/* BSV Group */}
+        <div className="flex gap-1 pr-2 border-r border-[#00ff88]/20">
+          <button
+            onClick={() => setViewMode('single')}
+            className={`px-3 py-2 rounded text-[#00ff88] font-mono text-xs border transition-all cursor-pointer ${
+              viewMode === 'single' 
+                ? 'bg-[#00ff88]/30 border-[#00ff88]/50' 
+                : 'border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50'
+            }`}
+            title="Bitcoin SV - Unbounded blocks"
+          >
+            BSV
+          </button>
+          <button
+            onClick={() => setViewMode('single+')}
+            className={`px-3 py-2 rounded text-[#00ff88] font-mono text-xs border transition-all cursor-pointer ${
+              viewMode === 'single+' 
+                ? 'bg-[#00ff88]/30 border-[#00ff88]/50' 
+                : 'border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50'
+            }`}
+            title="BSV+ - Animated through Earth"
+          >
+            BSV+
+          </button>
+        </div>
+        
+        {/* BTC Group */}
+        <div className="flex gap-1 px-2 border-r border-[#00ff88]/20">
+          <button
+            onClick={() => setViewMode('multi')}
+            className={`px-3 py-2 rounded text-[#00ff88] font-mono text-xs border transition-all cursor-pointer ${
+              viewMode === 'multi' 
+                ? 'bg-[#00ff88]/30 border-[#00ff88]/50' 
+                : 'border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50'
+            }`}
+            title="Bitcoin Core - Limited blocks"
+          >
+            BTC
+          </button>
+          <button
+            onClick={() => setViewMode('multi+')}
+            className={`px-3 py-2 rounded text-[#00ff88] font-mono text-xs border transition-all cursor-pointer ${
+              viewMode === 'multi+' 
+                ? 'bg-[#00ff88]/30 border-[#00ff88]/50' 
+                : 'border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50'
+            }`}
+            title="BTC+ - Enhanced view"
+          >
+            BTC+
+          </button>
+        </div>
+        
+        {/* Fantasy Group */}
+        <div className="flex gap-1 px-2 border-r border-[#00ff88]/20">
+          <button
+            onClick={() => setViewMode('play')}
+            className={`px-3 py-2 rounded text-[#00ff88] font-mono text-xs border transition-all cursor-pointer ${
+              viewMode === 'play' 
+                ? 'bg-[#00ff88]/30 border-[#00ff88]/50' 
+                : 'border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50'
+            }`}
+            title="Node Fantasy - Fantasy network view"
+          >
+            Node Fantasy
+          </button>
+          <button
+            onClick={() => setViewMode('play+')}
+            className={`px-3 py-2 rounded text-[#00ff88] font-mono text-xs border transition-all cursor-pointer ${
+              viewMode === 'play+' 
+                ? 'bg-[#00ff88]/30 border-[#00ff88]/50' 
+                : 'border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50'
+            }`}
+            title="Lightning Fantasy - Enhanced fantasy with Lightning Network routing"
+          >
+            Lightning Fantasy
+          </button>
+        </div>
+        
+        {/* Energy Use */}
+        <div className="flex gap-1 pl-2">
+          <button
+            onClick={() => setViewMode('energy')}
+            className={`px-3 py-2 rounded text-[#00ff88] font-mono text-xs border transition-all cursor-pointer ${
+              viewMode === 'energy' 
+                ? 'bg-[#00ff88]/30 border-[#00ff88]/50' 
+                : 'border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50'
+            }`}
+            title="Energy consumption comparison"
+          >
+            Energy Use
+          </button>
+        </div>
+      </div>
 
-      <Canvas
-        camera={{ position: [0, 10, 70], fov: 50 }}
-        onCreated={({ gl }) => {
-          // Ensure canvas doesn't capture keyboard events
-          gl.domElement.tabIndex = -1;
-        }}
-      >
-        <MiningPoolPieChart viewMode={viewMode} />
-        {viewMode === 'single' && <BlockchainBlocks viewMode={viewMode} />}
-        {viewMode === 'multi' && <BlockchainBlocks viewMode={viewMode} />}
-        {viewMode === 'play' && (
-          <>
-            <MultiChainBlocks />
-            <MeshNetwork />
-          </>
-        )}
-        {viewMode === 'single+' && <AnimatedCentralChain key={`bsv-${animationKey}`} />}
-        {viewMode === 'multi+' && <AnimatedBTCChain key={`btc-${animationKey}`} />}
-        {viewMode === 'play+' && (
-          <>
-            <MultiChainBlocks />
-            <MeshNetwork />
-            <LightningNetworkRouting key={`lightning-${animationKey}`} />
-          </>
-        )}
-        <OrbitControls
+      {viewMode === 'energy' ? (
+        <EnergyUseVisualization />
+      ) : (
+        <div className={`w-full h-screen relative ${isMobile ? '' : 'pl-96'}`} style={{ background: 'linear-gradient(135deg, #000000 0%, #0a0a0a 100%)' }}>
+
+          <Canvas
+            camera={{ position: [0, 10, 70], fov: 50 }}
+            onCreated={({ gl }) => {
+              // Ensure canvas doesn't capture keyboard events
+              gl.domElement.tabIndex = -1;
+            }}
+          >
+            <MiningPoolPieChart viewMode={viewMode} />
+            {viewMode === 'single' && <BlockchainBlocks viewMode={viewMode} />}
+            {viewMode === 'multi' && <BlockchainBlocks viewMode={viewMode} />}
+            {viewMode === 'play' && (
+              <>
+                <MultiChainBlocks />
+                <MeshNetwork />
+              </>
+            )}
+            {viewMode === 'single+' && <AnimatedCentralChain key={`bsv-${animationKey}`} />}
+            {viewMode === 'multi+' && <AnimatedBTCChain key={`btc-${animationKey}`} />}
+            {viewMode === 'play+' && (
+              <>
+                <MultiChainBlocks />
+                <MeshNetwork />
+                <LightningNetworkRouting key={`lightning-${animationKey}`} />
+              </>
+            )}
+            <OrbitControls
           ref={controlsRef}
           enableDamping
           dampingFactor={0.1}
@@ -1492,87 +1553,6 @@ export default function BlockchainVisualizer() {
         )}
       </div>
 
-      {/* View Mode Toggle - Top Center */}
-      <div className="absolute top-16 left-1/2 -translate-x-1/2 bg-black/90 backdrop-blur-md p-2 rounded-lg border border-[#00ff88]/30 flex gap-1" style={{ maxWidth: '600px' }}>
-        {/* BSV Group */}
-        <div className="flex gap-1 pr-2 border-r border-[#00ff88]/20">
-          <button
-            onClick={() => setViewMode('single')}
-            className={`px-3 py-2 rounded text-[#00ff88] font-mono text-xs border transition-all cursor-pointer ${
-              viewMode === 'single' 
-                ? 'bg-[#00ff88]/30 border-[#00ff88]/50' 
-                : 'border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50'
-            }`}
-            title="Bitcoin SV - Unbounded blocks"
-          >
-            BSV
-          </button>
-          <button
-            onClick={() => setViewMode('single+')}
-            className={`px-3 py-2 rounded text-[#00ff88] font-mono text-xs border transition-all cursor-pointer ${
-              viewMode === 'single+' 
-                ? 'bg-[#00ff88]/30 border-[#00ff88]/50' 
-                : 'border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50'
-            }`}
-            title="BSV+ - Animated through Earth"
-          >
-            BSV+
-          </button>
-        </div>
-        
-        {/* BTC Group */}
-        <div className="flex gap-1 px-2 border-r border-[#00ff88]/20">
-          <button
-            onClick={() => setViewMode('multi')}
-            className={`px-3 py-2 rounded text-[#00ff88] font-mono text-xs border transition-all cursor-pointer ${
-              viewMode === 'multi' 
-                ? 'bg-[#00ff88]/30 border-[#00ff88]/50' 
-                : 'border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50'
-            }`}
-            title="Bitcoin Core - Limited blocks"
-          >
-            BTC
-          </button>
-          <button
-            onClick={() => setViewMode('multi+')}
-            className={`px-3 py-2 rounded text-[#00ff88] font-mono text-xs border transition-all cursor-pointer ${
-              viewMode === 'multi+' 
-                ? 'bg-[#00ff88]/30 border-[#00ff88]/50' 
-                : 'border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50'
-            }`}
-            title="BTC+ - Enhanced view"
-          >
-            BTC+
-          </button>
-        </div>
-        
-        {/* Fantasy Group */}
-        <div className="flex gap-1 pl-2">
-          <button
-            onClick={() => setViewMode('play')}
-            className={`px-3 py-2 rounded text-[#00ff88] font-mono text-xs border transition-all cursor-pointer ${
-              viewMode === 'play' 
-                ? 'bg-[#00ff88]/30 border-[#00ff88]/50' 
-                : 'border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50'
-            }`}
-            title="Fantasy view"
-          >
-            Fantasy
-          </button>
-          <button
-            onClick={() => setViewMode('play+')}
-            className={`px-3 py-2 rounded text-[#00ff88] font-mono text-xs border transition-all cursor-pointer ${
-              viewMode === 'play+' 
-                ? 'bg-[#00ff88]/30 border-[#00ff88]/50' 
-                : 'border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50'
-            }`}
-            title="Fantasy+ - Enhanced fantasy"
-          >
-            Fantasy+
-          </button>
-        </div>
-      </div>
-
       {/* Control Buttons - Moved higher */}
       <div className="absolute bottom-20 right-4 bg-black/90 backdrop-blur-md p-2 rounded-lg border border-[#00ff88]/30 space-y-2">
         <button
@@ -1616,7 +1596,9 @@ export default function BlockchainVisualizer() {
         </div>
       </div>
 
-    </div>
+        </div>
+      )}
+    </>
   )
 
 }

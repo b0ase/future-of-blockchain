@@ -1,19 +1,19 @@
 @import "tailwindcss";
 
 :root {
-  --background: #fafbfc;
-  --foreground: #1a202c;
-  --primary: #2c5282;
+  --background: #000000;
+  --foreground: #ffffff;
+  --primary: #3b82f6;
   --primary-foreground: #ffffff;
-  --secondary: #4a5568;
+  --secondary: #94a3b8;
   --secondary-foreground: #ffffff;
-  --accent: #3182ce;
+  --accent: #60a5fa;
   --accent-foreground: #ffffff;
-  --muted: #f7fafc;
-  --muted-foreground: #718096;
-  --border: #e2e8f0;
-  --input: #e2e8f0;
-  --ring: #3182ce;
+  --muted: #111827;
+  --muted-foreground: #9ca3af;
+  --border: #374151;
+  --input: #1f2937;
+  --ring: #60a5fa;
   --chart-1: #3182ce;
   --chart-2: #38a169;
   --chart-3: #d69e2e;
@@ -72,30 +72,31 @@ body {
 
 /* Data visualization styles */
 .chart-container {
-  background: white;
+  background: #111827;
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
 .data-card {
-  background: white;
+  background: #111827;
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
   transition: all 0.2s ease;
 }
 
 .data-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7);
   transform: translateY(-2px);
+  border-color: #4b5563;
 }
 
 /* Research section styling */
 .research-section {
-  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+  background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 2rem;
@@ -103,25 +104,25 @@ body {
 }
 
 .metric-highlight {
-  background: white;
+  background: #111827;
   color: var(--primary);
   padding: 1rem 1.5rem;
   border-radius: 8px;
   text-align: center;
   border: 2px solid var(--border);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
 /* Academic navigation */
 .academic-nav {
-  background: white;
+  background: #000000;
   border-bottom: 2px solid var(--border);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
 /* Table of contents styling */
 .toc {
-  background: white;
+  background: #111827;
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 1.5rem;
@@ -174,7 +175,7 @@ body {
 }
 
 .methodology-step {
-  background: white;
+  background: #111827;
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 1.5rem;
