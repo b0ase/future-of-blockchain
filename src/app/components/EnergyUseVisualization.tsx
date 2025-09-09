@@ -313,6 +313,7 @@ export default function EnergyUseVisualization() {
   const [isAnimating, setIsAnimating] = useState(false)
   const [animationProgress, setAnimationProgress] = useState(0)
   const hasStartedRef = useRef(false)
+  const [isLegendOpen, setIsLegendOpen] = useState(false) // Collapsed by default
   
   const resetView = () => {
     if (controlsRef.current) {
@@ -433,27 +434,40 @@ export default function EnergyUseVisualization() {
         </button>
       </div>
       
-      {/* Info panel */}
-      <div className="absolute top-20 left-4 bg-black/80 backdrop-blur p-4 rounded-lg border border-[#00ff88]/30 max-w-md">
-        <h3 className="text-[#00ff88] font-mono text-sm mb-2">Energy Efficiency Evolution</h3>
-        <p className="text-gray-400 text-xs leading-relaxed">
-          Current data shows the banking system consumes significantly more energy than Bitcoin mining. 
-          As Bitcoin's blockchain evolves with larger block sizes, it becomes the rails for stablecoins 
-          and financial infrastructure.
-        </p>
-        <p className="text-gray-300 text-xs mt-2 leading-relaxed">
-          <span className="text-[#00ff88]">Network Effect:</span> As banks adopt Bitcoin's blockchain for settlements, 
-          both systems become more efficient. Transaction costs decrease while volume increases exponentially, 
-          creating a virtuous cycle reflected in Bitcoin's asset price.
-        </p>
-        {(isAnimating || animationProgress > 0) && (
-          <p className={`text-yellow-400 text-xs mt-2 leading-relaxed ${isAnimating ? 'animate-pulse' : ''}`}>
-            <span className="font-bold">Future Projection:</span> Bitcoin's energy triples (3x) as it absorbs banking functions, 
-            but remains far below current banking levels. Banking energy drops 75% as infrastructure migrates 
-            to blockchain rails. The net result: dramatically more efficient global finance with Bitcoin as the backbone.
+      {/* Legend Toggle Button - positioned below tabs on mobile */}
+      <button
+        onClick={() => setIsLegendOpen(!isLegendOpen)}
+        className="absolute top-20 left-4 px-3 py-2 bg-black/90 backdrop-blur rounded-lg border border-[#00ff88]/30 text-[#00ff88] font-mono text-xs hover:bg-[#00ff88]/20 transition-all cursor-pointer flex items-center gap-2"
+        title={isLegendOpen ? "Hide legend" : "Show legend"}
+      >
+        <span>{isLegendOpen ? '📖' : '📖'}</span>
+        <span>{isLegendOpen ? 'Hide Info' : 'Show Info'}</span>
+        <span>{isLegendOpen ? '▲' : '▼'}</span>
+      </button>
+      
+      {/* Collapsible Info panel */}
+      {isLegendOpen && (
+        <div className="absolute top-32 left-4 bg-black/90 backdrop-blur p-4 rounded-lg border border-[#00ff88]/30 max-w-md animate-in slide-in-from-top-2 duration-300">
+          <h3 className="text-[#00ff88] font-mono text-sm mb-2">Energy Efficiency Evolution</h3>
+          <p className="text-gray-400 text-xs leading-relaxed">
+            Current data shows the banking system consumes significantly more energy than Bitcoin mining. 
+            As Bitcoin's blockchain evolves with larger block sizes, it becomes the rails for stablecoins 
+            and financial infrastructure.
           </p>
-        )}
-      </div>
+          <p className="text-gray-300 text-xs mt-2 leading-relaxed">
+            <span className="text-[#00ff88]">Network Effect:</span> As banks adopt Bitcoin's blockchain for settlements, 
+            both systems become more efficient. Transaction costs decrease while volume increases exponentially, 
+            creating a virtuous cycle reflected in Bitcoin's asset price.
+          </p>
+          {(isAnimating || animationProgress > 0) && (
+            <p className={`text-yellow-400 text-xs mt-2 leading-relaxed ${isAnimating ? 'animate-pulse' : ''}`}>
+              <span className="font-bold">Future Projection:</span> Bitcoin's energy triples (3x) as it absorbs banking functions, 
+              but remains far below current banking levels. Banking energy drops 75% as infrastructure migrates 
+              to blockchain rails. The net result: dramatically more efficient global finance with Bitcoin as the backbone.
+            </p>
+          )}
+        </div>
+      )}
     </div>
   )
 }
