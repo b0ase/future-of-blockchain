@@ -11,28 +11,18 @@ export interface MiningPool {
 
 // Fallback static data if APIs are unavailable - Full rainbow gradient matching BTC
 export const fallbackBSVPools: MiningPool[] = [
-  { name: 'TAAL', percentage: 32.0, color: '#FF0000' },         // Red
-  { name: 'QDLink', percentage: 23.0, color: '#FF3300' },       // Red-Orange
-  { name: 'CUUVE', percentage: 10.0, color: '#FF6600' },        // Orange
-  { name: 'Mining Dutch', percentage: 7.0, color: '#FF9900' },   // Orange-Yellow
-  { name: 'GorillaPool', percentage: 5.0, color: '#FFCC00' },   // Yellow-Orange
-  { name: 'Unknown', percentage: 4.0, color: '#FFFF00' },       // Yellow
-  { name: 'ViaBTC', percentage: 3.5, color: '#CCFF00' },        // Yellow-Green
-  { name: 'SVPool', percentage: 3.0, color: '#99FF00' },        // Light Green
-  { name: 'F2Pool', percentage: 2.5, color: '#66FF00' },        // Green
-  { name: 'SBI Crypto', percentage: 2.0, color: '#33FF00' },    // Green
-  { name: 'Mempool', percentage: 1.8, color: '#00FF00' },       // Pure Green
-  { name: 'MARA', percentage: 1.5, color: '#00FF33' },          // Green-Cyan
-  { name: 'BitDeer', percentage: 1.3, color: '#00FF66' },       // Cyan-Green
-  { name: 'Huobi', percentage: 1.0, color: '#00FF99' },         // Cyan
-  { name: 'OKEx', percentage: 0.8, color: '#00FFCC' },          // Cyan
-  { name: 'SlushPool', percentage: 0.6, color: '#00FFFF' },     // Pure Cyan
-  { name: 'BTC.TOP', percentage: 0.5, color: '#00CCFF' },       // Cyan-Blue
-  { name: 'Solo Miners', percentage: 0.4, color: '#0099FF' },   // Light Blue
-  { name: 'Kano', percentage: 0.3, color: '#0066FF' },          // Blue
-  { name: 'BTCC', percentage: 0.2, color: '#0033FF' },          // Blue
-  { name: 'HashNest', percentage: 0.15, color: '#0000FF' },     // Pure Blue
-  { name: 'Others', percentage: 0.15, color: '#3300FF' }        // Blue-Violet
+  { name: 'TAAL', percentage: 35.0, color: '#FF0000' },         // Red
+  { name: 'QDLink', percentage: 25.0, color: '#FF3300' },       // Red-Orange
+  { name: 'CUUVE', percentage: 12.0, color: '#FF6600' },        // Orange
+  { name: 'Mining Dutch', percentage: 8.0, color: '#FF9900' },   // Orange-Yellow
+  { name: 'GorillaPool', percentage: 6.0, color: '#FFCC00' },   // Yellow-Orange
+  { name: 'Unknown', percentage: 5.0, color: '#FFFF00' },       // Yellow
+  { name: 'ViaBTC', percentage: 3.0, color: '#CCFF00' },        // Yellow-Green
+  { name: 'SVPool', percentage: 2.5, color: '#99FF00' },        // Light Green
+  { name: 'MARAPool', percentage: 1.5, color: '#66FF00' },      // Green
+  { name: 'SBI Crypto', percentage: 1.0, color: '#33FF00' },    // Green
+  { name: 'Solo Miners', percentage: 0.5, color: '#00FF00' },   // Pure Green
+  { name: 'Others', percentage: 0.5, color: '#00FF33' }         // Green-Cyan
 ];
 
 // Mining pool identification patterns (coinbase signatures)

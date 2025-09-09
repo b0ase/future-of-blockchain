@@ -964,7 +964,7 @@ export default function BlockchainVisualizer() {
         {/* Total Hash Rate */}
         <div className="mb-3 p-2 bg-blue-900/30 rounded border border-blue-500/20">
           <div className="text-cyan-400 font-bold text-sm">🌐 TOTAL NETWORK</div>
-          <div className="text-yellow-400 text-lg font-bold">{viewMode === 'single' || viewMode === 'single+' ? '~2.5 EH/s' : viewMode === 'play' || viewMode === 'play+' ? 'DISTRIBUTED' : '~680 EH/s'}</div>
+          <div className="text-yellow-400 text-lg font-bold">{viewMode === 'single' || viewMode === 'single+' ? '~0.6 EH/s' : viewMode === 'play' || viewMode === 'play+' ? 'DISTRIBUTED' : '~680 EH/s'}</div>
         </div>
 
         {/* All Pools - sized proportionally with harmonious colors */}
@@ -987,9 +987,9 @@ export default function BlockchainVisualizer() {
                 const fontSize = isLarge ? 'text-lg' : isMedium ? 'text-base' : isSmall ? 'text-xs' : 'text-sm';
                 const borderWidth = isLarge ? '4px' : isMedium ? '4px' : isSmall ? '2px' : '3px';
                 
-                // Calculate estimated hash rate (2.5 EH/s total)
-                const hashrate = pool.percentage * 25; // 2500 PH/s total
-                const hashrateStr = hashrate > 1000 ? `~${(hashrate/1000).toFixed(1)} EH/s` : `~${Math.round(hashrate)} PH/s`;
+                // Calculate estimated hash rate (0.6 EH/s total for BSV)
+                const hashrate = pool.percentage * 6; // 600 PH/s total
+                const hashrateStr = hashrate > 100 ? `~${Math.round(hashrate)} PH/s` : hashrate > 10 ? `~${Math.round(hashrate)} PH/s` : '';
                 
                 return (
                   <div 
