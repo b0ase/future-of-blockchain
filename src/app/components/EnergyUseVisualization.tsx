@@ -27,7 +27,7 @@ function Bar3D({ data, index, maxValue, isHovered, onHover, animationProgress }:
   // Base heights
   const baseCostHeight = (data.yearCost / 2000) * 40
   const baseEnergyHeight = (data.energyGJ / 2500) * 40
-  const baseTxHeight = (data.txVolume / 5000) * 60 // scale for 5000T max, allow taller growth
+  const baseTxHeight = (data.txVolume / 2500) * 40 // scale for 2500T max transaction volume
   
   // Apply animation changes
   let costHeight = baseCostHeight
@@ -47,18 +47,18 @@ function Bar3D({ data, index, maxValue, isHovered, onHover, animationProgress }:
       const energyGrowthFactor = 1 + (1.0 * animationProgress)
       energyHeight = baseEnergyHeight * energyGrowthFactor
       displayEnergy = data.energyGJ * energyGrowthFactor
-      // Transaction volume EXPLODES to 5000T mark IMMEDIATELY
-      // Ultra-aggressive growth - reaches 5000T at just 20% animation progress
+      // Transaction volume grows rapidly to 2500T mark
+      // Aggressive growth - reaches 2500T at 30% animation progress
       const bankingLoss = 0.6 * animationProgress
-      // Extreme exponential curve - reaches 10000x growth very early (0.5T to 5000T)
-      const txGrowthFactor = animationProgress > 0.2 
-        ? 10000 // Max out at 5000T after 20% progress
-        : Math.pow(10000, animationProgress / 0.2) // Exponential growth to 10000x in first 20%
+      // Exponential curve - reaches 5000x growth (0.5T to 2500T)
+      const txGrowthFactor = animationProgress > 0.3 
+        ? 5000 // Max out at 2500T after 30% progress
+        : Math.pow(5000, animationProgress / 0.3) // Exponential growth to 5000x in first 30%
       // Calculate the actual new transaction volume for height
-      const newTxVolume = data.txVolume * txGrowthFactor // Goes from 0.5T to 5000T
-      txHeight = (newTxVolume / 5000) * 60 // Taller bars - recalculate height based on 5000T scale
-      // Update displayed transaction volume to reach 5000T
-      displayTxVolume = newTxVolume // Show actual growth up to 5000T
+      const newTxVolume = data.txVolume * txGrowthFactor // Goes from 0.5T to 2500T
+      txHeight = (newTxVolume / 2500) * 40 // Recalculate height based on 2500T scale
+      // Update displayed transaction volume to reach 2500T
+      displayTxVolume = newTxVolume // Show actual growth up to 2500T
     } else if (data.name === 'Banking System') {
       // Banking decreases by 75% - same rate as transaction volume
       const shrinkFactor = 1 - (0.75 * animationProgress)
@@ -68,7 +68,7 @@ function Bar3D({ data, index, maxValue, isHovered, onHover, animationProgress }:
       // Decrease by 75% (from 1875T to ~470T) to show migration to Bitcoin
       const txShrinkFactor = 1 - (0.75 * animationProgress)
       const newBankingTxVolume = data.txVolume * txShrinkFactor
-      txHeight = (newBankingTxVolume / 5000) * 60 // Recalculate height based on 5000T scale with taller bars
+      txHeight = (newBankingTxVolume / 2500) * 40 // Recalculate height based on 2500T scale
       // Update displayed transaction volume
       displayTxVolume = newBankingTxVolume
       // Update displayed cost and energy values to match the shrinkage
