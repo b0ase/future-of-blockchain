@@ -1234,7 +1234,7 @@ export default function BlockchainVisualizer() {
   }
 
   return (
-    <div className="w-full h-screen relative pl-96" style={{ background: 'linear-gradient(135deg, #000000 0%, #0a0a0a 100%)' }}>
+    <div className={`w-full h-screen relative ${isMobile ? '' : 'pl-96'}`} style={{ background: 'linear-gradient(135deg, #000000 0%, #0a0a0a 100%)' }}>
 
       <Canvas
         camera={{ position: [0, 10, 70], fov: 50 }}
@@ -1283,7 +1283,7 @@ export default function BlockchainVisualizer() {
       </Canvas>
 
       {/* FULL LEFT SIDE Mining Pool Information Panel - Collapsible on Mobile */}
-      <div className={`absolute top-0 left-0 ${isMobile ? 'w-full' : 'w-96'} ${isLegendOpen ? 'h-full' : 'h-auto'} bg-black/95 backdrop-blur-md ${isMobile ? 'p-2' : 'p-3'} text-white font-mono text-xs border-r border-blue-500/30 ${isLegendOpen ? 'overflow-y-auto' : 'overflow-hidden'} transition-all duration-300`}>
+      <div className={`absolute top-0 left-0 ${isMobile ? 'w-full z-50' : 'w-96'} ${isLegendOpen ? 'h-full' : 'h-auto'} bg-black/95 backdrop-blur-md ${isMobile ? 'p-2' : 'p-3'} text-white font-mono text-xs border-r border-blue-500/30 ${isLegendOpen ? 'overflow-y-auto' : 'overflow-hidden'} transition-all duration-300`}>
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-blue-400 font-bold flex items-center gap-2 text-sm">
             ⛏️ {viewMode === 'single' || viewMode === 'single+' ? 'BSV NODE NETWORK' : viewMode === 'play' || viewMode === 'play+' ? 'FANTASY NETWORK' : 'BTC MINING POOLS'}
