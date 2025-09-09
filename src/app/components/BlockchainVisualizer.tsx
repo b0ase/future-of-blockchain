@@ -1227,10 +1227,10 @@ export default function BlockchainVisualizer() {
 
   return (
     <>
-      {/* View Mode Toggle - Always visible at top */}
-      <div className="absolute top-16 left-1/2 -translate-x-1/2 bg-black/90 backdrop-blur-md p-2 rounded-lg border border-[#00ff88]/30 flex gap-1 z-50" style={{ maxWidth: '700px' }}>
+      {/* View Mode Toggle - Below navbar on all devices */}
+      <div className="absolute top-20 md:top-16 left-1/2 -translate-x-1/2 bg-black/90 backdrop-blur-md p-2 rounded-lg border border-[#00ff88]/30 flex flex-wrap md:flex-nowrap gap-1 z-50" style={{ maxWidth: '700px' }}>
         {/* BSV Group */}
-        <div className="flex gap-1 pr-2 border-r border-[#00ff88]/20">
+        <div className="flex gap-1 pr-2 border-r-0 md:border-r border-[#00ff88]/20">
           <button
             onClick={() => setViewMode('single')}
             className={`px-3 py-2 rounded text-[#00ff88] font-mono text-xs border transition-all cursor-pointer ${
@@ -1256,7 +1256,7 @@ export default function BlockchainVisualizer() {
         </div>
         
         {/* BTC Group */}
-        <div className="flex gap-1 px-2 border-r border-[#00ff88]/20">
+        <div className="flex gap-1 px-2 md:px-2 px-0 border-r-0 md:border-r border-[#00ff88]/20">
           <button
             onClick={() => setViewMode('multi')}
             className={`px-3 py-2 rounded text-[#00ff88] font-mono text-xs border transition-all cursor-pointer ${
@@ -1282,7 +1282,7 @@ export default function BlockchainVisualizer() {
         </div>
         
         {/* Fantasy Group */}
-        <div className="flex gap-1 px-2 border-r border-[#00ff88]/20">
+        <div className="flex gap-1 px-2 md:px-2 px-0 border-r-0 md:border-r border-[#00ff88]/20">
           <button
             onClick={() => setViewMode('play')}
             className={`px-3 py-2 rounded text-[#00ff88] font-mono text-xs border transition-all cursor-pointer ${
@@ -1308,7 +1308,7 @@ export default function BlockchainVisualizer() {
         </div>
         
         {/* Energy Use */}
-        <div className="flex gap-1 pl-2">
+        <div className="flex gap-1 pl-2 md:pl-2 pl-0">
           <button
             onClick={() => setViewMode('energy')}
             className={`px-3 py-2 rounded text-[#00ff88] font-mono text-xs border transition-all cursor-pointer ${

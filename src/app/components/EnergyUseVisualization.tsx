@@ -434,10 +434,10 @@ export default function EnergyUseVisualization() {
         </button>
       </div>
       
-      {/* Legend Toggle Button - positioned below tabs on mobile */}
+      {/* Legend Toggle Button - positioned further down on mobile to avoid overlap */}
       <button
         onClick={() => setIsLegendOpen(!isLegendOpen)}
-        className="absolute top-20 left-4 px-3 py-2 bg-black/90 backdrop-blur rounded-lg border border-[#00ff88]/30 text-[#00ff88] font-mono text-xs hover:bg-[#00ff88]/20 transition-all cursor-pointer flex items-center gap-2"
+        className="absolute top-32 md:top-20 left-4 px-3 py-2 bg-black/90 backdrop-blur rounded-lg border border-[#00ff88]/30 text-[#00ff88] font-mono text-xs hover:bg-[#00ff88]/20 transition-all cursor-pointer flex items-center gap-2"
         title={isLegendOpen ? "Hide legend" : "Show legend"}
       >
         <span>{isLegendOpen ? '📖' : '📖'}</span>
@@ -447,7 +447,7 @@ export default function EnergyUseVisualization() {
       
       {/* Collapsible Info panel */}
       {isLegendOpen && (
-        <div className="absolute top-32 left-4 bg-black/90 backdrop-blur p-4 rounded-lg border border-[#00ff88]/30 max-w-md animate-in slide-in-from-top-2 duration-300">
+        <div className="absolute top-44 md:top-32 left-4 bg-black/90 backdrop-blur p-4 rounded-lg border border-[#00ff88]/30 max-w-md animate-in slide-in-from-top-2 duration-300">
           <h3 className="text-[#00ff88] font-mono text-sm mb-2">Energy Efficiency Evolution</h3>
           <p className="text-gray-400 text-xs leading-relaxed">
             Current data shows the banking system consumes significantly more energy than Bitcoin mining. 
