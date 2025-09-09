@@ -1493,7 +1493,7 @@ export default function BlockchainVisualizer() {
       </div>
 
       {/* View Mode Toggle - Top Center */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/90 backdrop-blur-md p-2 rounded-lg border border-[#00ff88]/30 flex gap-1" style={{ maxWidth: '600px' }}>
+      <div className="absolute top-16 left-1/2 -translate-x-1/2 bg-black/90 backdrop-blur-md p-2 rounded-lg border border-[#00ff88]/30 flex gap-1" style={{ maxWidth: '600px' }}>
         {/* BSV Group */}
         <div className="flex gap-1 pr-2 border-r border-[#00ff88]/20">
           <button
