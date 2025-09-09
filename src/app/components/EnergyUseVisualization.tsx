@@ -361,14 +361,14 @@ export default function EnergyUseVisualization() {
       clearTimeout(interactionTimeoutRef.current)
     }
     
-    // Set new timeout to resume animation after 7 seconds
+    // Set new timeout to resume animation after just 1 second
     interactionTimeoutRef.current = setTimeout(() => {
       setUserInteracting(false)
       // Resume animation if it was playing
       if (animationProgress > 0 && animationProgress < 1) {
         setIsAnimating(true)
       }
-    }, 7000)
+    }, 1000) // Changed from 7000ms to 1000ms
   }
 
   const startAnimation = () => {
@@ -386,7 +386,7 @@ export default function EnergyUseVisualization() {
   }
   
   useEffect(() => {
-    if (isAnimating && !userInteracting) {
+    if (isAnimating) {  // Remove userInteracting check - animation continues regardless
       console.log('Animation started, setting up interval')
       const interval = setInterval(() => {
         setAnimationProgress(prev => {
@@ -407,7 +407,7 @@ export default function EnergyUseVisualization() {
       
       return () => clearInterval(interval)
     }
-  }, [isAnimating, userInteracting])
+  }, [isAnimating])  // Remove userInteracting from dependencies
   
   // Auto-start animation on component mount
   useEffect(() => {
