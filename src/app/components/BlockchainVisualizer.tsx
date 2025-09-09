@@ -1310,7 +1310,7 @@ export default function BlockchainVisualizer() {
             {viewMode === 'play' && (
               <>
                 <MultiChainBlocks />
-                <MeshNetwork />
+                {/* MeshNetwork removed - cleaner visualization */}
               </>
             )}
             {viewMode === 'single+' && <AnimatedCentralChain key={`bsv-${animationKey}`} />}
