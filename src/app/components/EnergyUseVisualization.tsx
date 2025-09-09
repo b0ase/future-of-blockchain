@@ -195,29 +195,36 @@ function Bar3D({ data, index, maxValue, isHovered, onHover, animationProgress }:
   )
 }
 
-function Chart3D({ animationProgress, controlsRef }: { animationProgress: number, controlsRef: any }) {
+function Chart3D({ animationProgress, controlsRef, userInteracting, isMobile }: { 
+  animationProgress: number, 
+  controlsRef: any,
+  userInteracting?: boolean,
+  isMobile?: boolean 
+}) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
   
-  // Camera movement only after banking sector has shrunk (after 50% progress)
+  // Camera movement only after banking sector has shrunk (after 50% progress) and when user is not interacting
   useEffect(() => {
-    if (controlsRef?.current) {
+    if (controlsRef?.current && !userInteracting) {
       if (animationProgress > 0.5) {
         // Start panning up after banking has shrunk
         const panProgress = (animationProgress - 0.5) * 2 // Normalize to 0-1 for second half
         const cameraY = 20 + (panProgress * 15) // Pan from Y:20 to Y:35
         const targetY = 15 + (panProgress * 10) // Target from Y:15 to Y:25
+        const cameraZ = isMobile ? 90 : 60
         
-        controlsRef.current.object.position.set(0, cameraY, 60)
+        controlsRef.current.object.position.set(0, cameraY, cameraZ)
         controlsRef.current.target.set(0, targetY, 0)
         controlsRef.current.update()
       } else {
         // Keep camera at default position until banking shrinks
-        controlsRef.current.object.position.set(0, 20, 60)
+        const cameraZ = isMobile ? 90 : 60
+        controlsRef.current.object.position.set(0, 20, cameraZ)
         controlsRef.current.target.set(0, 15, 0)
         controlsRef.current.update()
       }
     }
-  }, [animationProgress, controlsRef])
+  }, [animationProgress, controlsRef, userInteracting, isMobile])
   
   const data: DataPoint[] = [
     { name: 'Bitcoin Mining', yearCost: 16, energyGJ: 180, txVolume: 0.5, color: '#7C3AED' },
@@ -314,29 +321,64 @@ export default function EnergyUseVisualization() {
   const [animationProgress, setAnimationProgress] = useState(0)
   const hasStartedRef = useRef(false)
   const [isLegendOpen, setIsLegendOpen] = useState(false) // Collapsed by default
+  const [userInteracting, setUserInteracting] = useState(false)
+  const interactionTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const [isMobile, setIsMobile] = useState(false)
   
+  // Detect mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
   const resetView = () => {
     if (controlsRef.current) {
       controlsRef.current.target.set(0, 15, 0)
-      controlsRef.current.object.position.set(0, 20, 60)
+      // Zoom out more on mobile to see full animation
+      const cameraZ = isMobile ? 90 : 60
+      controlsRef.current.object.position.set(0, 20, cameraZ)
       controlsRef.current.update()
     }
   }
   
+  const handleUserInteraction = () => {
+    setUserInteracting(true)
+    
+    // Clear existing timeout
+    if (interactionTimeoutRef.current) {
+      clearTimeout(interactionTimeoutRef.current)
+    }
+    
+    // Set new timeout to resume animation after 7 seconds
+    interactionTimeoutRef.current = setTimeout(() => {
+      setUserInteracting(false)
+      // Resume animation if it was playing
+      if (animationProgress > 0 && animationProgress < 1) {
+        setIsAnimating(true)
+      }
+    }, 7000)
+  }
+
   const startAnimation = () => {
     console.log('Starting animation')
     setAnimationProgress(0)
     setIsAnimating(true)
+    setUserInteracting(false)
   }
   
   const resetAnimation = () => {
     console.log('Resetting animation')
     setIsAnimating(false)
     setAnimationProgress(0)
+    setUserInteracting(false)
   }
   
   useEffect(() => {
-    if (isAnimating) {
+    if (isAnimating && !userInteracting) {
       console.log('Animation started, setting up interval')
       const interval = setInterval(() => {
         setAnimationProgress(prev => {
@@ -357,7 +399,7 @@ export default function EnergyUseVisualization() {
       
       return () => clearInterval(interval)
     }
-  }, [isAnimating])
+  }, [isAnimating, userInteracting])
   
   // Auto-start animation on component mount
   useEffect(() => {
@@ -372,14 +414,19 @@ export default function EnergyUseVisualization() {
   return (
     <div className="w-full h-screen bg-black relative">
       <Canvas
-        camera={{ position: [0, 20, 60], fov: 75 }}
+        camera={{ position: [0, 20, isMobile ? 90 : 60], fov: isMobile ? 85 : 75 }}
       >
         <color attach="background" args={['#000000']} />
         <ambientLight intensity={0.8} />
         <directionalLight position={[10, 10, 5]} intensity={1.5} />
         <pointLight position={[0, 20, 0]} intensity={1.0} />
         
-        <Chart3D animationProgress={animationProgress} controlsRef={controlsRef} />
+        <Chart3D 
+          animationProgress={animationProgress} 
+          controlsRef={controlsRef} 
+          userInteracting={userInteracting}
+          isMobile={isMobile}
+        />
         
         <OrbitControls 
           ref={controlsRef}
@@ -390,6 +437,8 @@ export default function EnergyUseVisualization() {
           maxPolarAngle={Math.PI * 0.85}
           minDistance={30}
           maxDistance={150}
+          onStart={handleUserInteraction}
+          onChange={handleUserInteraction}
         />
         
         {/* Fog for depth */}
