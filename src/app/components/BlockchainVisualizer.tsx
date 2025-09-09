@@ -696,10 +696,11 @@ function LightningNetworkRouting() {
     const generatePaths = () => {
       const segments = []
       const gridSize = 5
-      const startX = -40
-      const startZ = -30
-      const endX = 40
-      const endZ = 30
+      // Place Alice and Bob on circumference of pie chart (radius ~30)
+      const startX = -25
+      const startZ = -25
+      const endX = 25
+      const endZ = 25
       
       // Main successful path with grid-based movement
       let x = startX
@@ -818,21 +819,21 @@ function LightningNetworkRouting() {
   
   return (
     <group position={[0, -25, 0]}> {/* Position on mesh network plane */}
-      {/* Alice node */}
-      <mesh position={[-40, 0.5, -30]}>
+      {/* Alice node - on pie chart circumference */}
+      <mesh position={[-25, 0.5, -25]}>
         <sphereGeometry args={[2, 16, 16]} />
         <meshStandardMaterial color="#00ff00" emissive="#00ff00" emissiveIntensity={0.5} />
       </mesh>
-      <Text position={[-40, 3, -30]} fontSize={1.5} color="#00ff00">
+      <Text position={[-25, 3, -25]} fontSize={1.5} color="#00ff00">
         Alice
       </Text>
       
-      {/* Bob node */}
-      <mesh position={[40, 0.5, 30]}>
+      {/* Bob node - on pie chart circumference */}
+      <mesh position={[25, 0.5, 25]}>
         <sphereGeometry args={[2, 16, 16]} />
         <meshStandardMaterial color="#ff00ff" emissive="#ff00ff" emissiveIntensity={0.5} />
       </mesh>
-      <Text position={[40, 3, 30]} fontSize={1.5} color="#ff00ff">
+      <Text position={[25, 3, 25]} fontSize={1.5} color="#ff00ff">
         Bob
       </Text>
       

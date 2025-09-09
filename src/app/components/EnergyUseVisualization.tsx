@@ -320,15 +320,23 @@ export default function EnergyUseVisualization() {
   const [isAnimating, setIsAnimating] = useState(false)
   const [animationProgress, setAnimationProgress] = useState(0)
   const hasStartedRef = useRef(false)
-  const [isLegendOpen, setIsLegendOpen] = useState(false) // Collapsed by default
   const [userInteracting, setUserInteracting] = useState(false)
   const interactionTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const [isMobile, setIsMobile] = useState(false)
+  // Initialize legend state based on device - open on desktop, closed on mobile
+  const [isLegendOpen, setIsLegendOpen] = useState(typeof window !== 'undefined' ? window.innerWidth >= 768 : true)
   
   // Detect mobile
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
+      const mobile = window.innerWidth < 768
+      setIsMobile(mobile)
+      // Update legend state when switching between mobile/desktop
+      if (mobile && isLegendOpen) {
+        setIsLegendOpen(false)
+      } else if (!mobile && !isLegendOpen && !hasStartedRef.current) {
+        setIsLegendOpen(true)
+      }
     }
     checkMobile()
     window.addEventListener('resize', checkMobile)
