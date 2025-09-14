@@ -1167,6 +1167,7 @@ export default function BlockchainVisualizer() {
   const [animationKey, setAnimationKey] = useState(0) // Key to force re-render animations
   const [isLegendOpen, setIsLegendOpen] = useState(true) // Legend visibility state
   const [isMobile, setIsMobile] = useState(false) // Mobile detection
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false) // Dropdown menu state
 
   // Detect mobile screen size
   useEffect(() => {
@@ -1228,101 +1229,187 @@ export default function BlockchainVisualizer() {
 
   return (
     <>
-      {/* View Mode Toggle - Below navbar on all devices */}
-      <div className="absolute top-20 md:top-16 left-1/2 -translate-x-1/2 bg-black/90 backdrop-blur-md p-2 rounded-lg border border-[#00ff88]/30 flex flex-wrap md:flex-nowrap gap-1 z-50" style={{ maxWidth: '700px' }}>
-        {/* BSV Group */}
-        <div className="flex gap-1 pr-2 border-r-0 md:border-r border-[#00ff88]/20">
-          <button
-            onClick={() => setViewMode('single')}
-            className={`px-3 py-2 rounded text-[#00ff88] font-mono text-xs border transition-all cursor-pointer ${
-              viewMode === 'single' 
-                ? 'bg-[#00ff88]/30 border-[#00ff88]/50' 
-                : 'border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50'
-            }`}
-            title="Bitcoin SV - Unbounded blocks"
-          >
-            BSV
-          </button>
-          <button
-            onClick={() => setViewMode('single+')}
-            className={`px-3 py-2 rounded text-[#00ff88] font-mono text-xs border transition-all cursor-pointer ${
-              viewMode === 'single+' 
-                ? 'bg-[#00ff88]/30 border-[#00ff88]/50' 
-                : 'border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50'
-            }`}
-            title="BSV+ - Animated through Earth"
-          >
-            BSV+
-          </button>
+      {/* View Mode Toggle - Dropdown on mobile, tabs on desktop */}
+      {isMobile ? (
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50">
+          <div className="relative">
+            <button
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="bg-black/90 backdrop-blur-md px-4 py-2 rounded-lg border border-[#00ff88]/30 text-[#00ff88] font-mono text-sm flex items-center gap-2 hover:bg-[#00ff88]/20 transition-all"
+            >
+              <span>
+                {viewMode === 'single' ? 'BSV' :
+                 viewMode === 'single+' ? 'BSV+' :
+                 viewMode === 'multi' ? 'BTC' :
+                 viewMode === 'multi+' ? 'BTC+' :
+                 viewMode === 'play' ? 'Node Fantasy' :
+                 viewMode === 'play+' ? 'Lightning Fantasy' :
+                 'Energy Use'}
+              </span>
+              <span className="text-xs">{isDropdownOpen ? '▲' : '▼'}</span>
+            </button>
+            
+            {isDropdownOpen && (
+              <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-black/95 backdrop-blur-md rounded-lg border border-[#00ff88]/30 overflow-hidden min-w-[200px]">
+                <button
+                  onClick={() => { setViewMode('single'); setIsDropdownOpen(false); }}
+                  className={`w-full px-4 py-2 text-left text-[#00ff88] font-mono text-sm hover:bg-[#00ff88]/20 transition-all ${
+                    viewMode === 'single' ? 'bg-[#00ff88]/30' : ''
+                  }`}
+                >
+                  BSV
+                </button>
+                <button
+                  onClick={() => { setViewMode('single+'); setIsDropdownOpen(false); }}
+                  className={`w-full px-4 py-2 text-left text-[#00ff88] font-mono text-sm hover:bg-[#00ff88]/20 transition-all ${
+                    viewMode === 'single+' ? 'bg-[#00ff88]/30' : ''
+                  }`}
+                >
+                  BSV+
+                </button>
+                <div className="border-t border-[#00ff88]/20"></div>
+                <button
+                  onClick={() => { setViewMode('multi'); setIsDropdownOpen(false); }}
+                  className={`w-full px-4 py-2 text-left text-[#00ff88] font-mono text-sm hover:bg-[#00ff88]/20 transition-all ${
+                    viewMode === 'multi' ? 'bg-[#00ff88]/30' : ''
+                  }`}
+                >
+                  BTC
+                </button>
+                <button
+                  onClick={() => { setViewMode('multi+'); setIsDropdownOpen(false); }}
+                  className={`w-full px-4 py-2 text-left text-[#00ff88] font-mono text-sm hover:bg-[#00ff88]/20 transition-all ${
+                    viewMode === 'multi+' ? 'bg-[#00ff88]/30' : ''
+                  }`}
+                >
+                  BTC+
+                </button>
+                <div className="border-t border-[#00ff88]/20"></div>
+                <button
+                  onClick={() => { setViewMode('play'); setIsDropdownOpen(false); }}
+                  className={`w-full px-4 py-2 text-left text-[#00ff88] font-mono text-sm hover:bg-[#00ff88]/20 transition-all ${
+                    viewMode === 'play' ? 'bg-[#00ff88]/30' : ''
+                  }`}
+                >
+                  Node Fantasy
+                </button>
+                <button
+                  onClick={() => { setViewMode('play+'); setIsDropdownOpen(false); }}
+                  className={`w-full px-4 py-2 text-left text-[#00ff88] font-mono text-sm hover:bg-[#00ff88]/20 transition-all ${
+                    viewMode === 'play+' ? 'bg-[#00ff88]/30' : ''
+                  }`}
+                >
+                  Lightning Fantasy
+                </button>
+                <div className="border-t border-[#00ff88]/20"></div>
+                <button
+                  onClick={() => { setViewMode('energy'); setIsDropdownOpen(false); }}
+                  className={`w-full px-4 py-2 text-left text-[#00ff88] font-mono text-sm hover:bg-[#00ff88]/20 transition-all ${
+                    viewMode === 'energy' ? 'bg-[#00ff88]/30' : ''
+                  }`}
+                >
+                  Energy Use
+                </button>
+              </div>
+            )}
+          </div>
         </div>
-        
-        {/* BTC Group */}
-        <div className="flex gap-1 px-2 md:px-2 px-0 border-r-0 md:border-r border-[#00ff88]/20">
-          <button
-            onClick={() => setViewMode('multi')}
-            className={`px-3 py-2 rounded text-[#00ff88] font-mono text-xs border transition-all cursor-pointer ${
-              viewMode === 'multi' 
-                ? 'bg-[#00ff88]/30 border-[#00ff88]/50' 
-                : 'border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50'
-            }`}
-            title="Bitcoin Core - Limited blocks"
-          >
-            BTC
-          </button>
-          <button
-            onClick={() => setViewMode('multi+')}
-            className={`px-3 py-2 rounded text-[#00ff88] font-mono text-xs border transition-all cursor-pointer ${
-              viewMode === 'multi+' 
-                ? 'bg-[#00ff88]/30 border-[#00ff88]/50' 
-                : 'border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50'
-            }`}
-            title="BTC+ - Enhanced view"
-          >
-            BTC+
-          </button>
+      ) : (
+        <div className="absolute top-16 left-1/2 -translate-x-1/2 bg-black/90 backdrop-blur-md p-2 rounded-lg border border-[#00ff88]/30 flex gap-1 z-50" style={{ maxWidth: '700px' }}>
+          {/* BSV Group */}
+          <div className="flex gap-1 pr-2 border-r border-[#00ff88]/20">
+            <button
+              onClick={() => setViewMode('single')}
+              className={`px-3 py-2 rounded text-[#00ff88] font-mono text-xs border transition-all cursor-pointer ${
+                viewMode === 'single' 
+                  ? 'bg-[#00ff88]/30 border-[#00ff88]/50' 
+                  : 'border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50'
+              }`}
+              title="Bitcoin SV - Unbounded blocks"
+            >
+              BSV
+            </button>
+            <button
+              onClick={() => setViewMode('single+')}
+              className={`px-3 py-2 rounded text-[#00ff88] font-mono text-xs border transition-all cursor-pointer ${
+                viewMode === 'single+' 
+                  ? 'bg-[#00ff88]/30 border-[#00ff88]/50' 
+                  : 'border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50'
+              }`}
+              title="BSV+ - Animated through Earth"
+            >
+              BSV+
+            </button>
+          </div>
+          
+          {/* BTC Group */}
+          <div className="flex gap-1 px-2 border-r border-[#00ff88]/20">
+            <button
+              onClick={() => setViewMode('multi')}
+              className={`px-3 py-2 rounded text-[#00ff88] font-mono text-xs border transition-all cursor-pointer ${
+                viewMode === 'multi' 
+                  ? 'bg-[#00ff88]/30 border-[#00ff88]/50' 
+                  : 'border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50'
+              }`}
+              title="Bitcoin Core - Limited blocks"
+            >
+              BTC
+            </button>
+            <button
+              onClick={() => setViewMode('multi+')}
+              className={`px-3 py-2 rounded text-[#00ff88] font-mono text-xs border transition-all cursor-pointer ${
+                viewMode === 'multi+' 
+                  ? 'bg-[#00ff88]/30 border-[#00ff88]/50' 
+                  : 'border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50'
+              }`}
+              title="BTC+ - Enhanced view"
+            >
+              BTC+
+            </button>
+          </div>
+          
+          {/* Fantasy Group */}
+          <div className="flex gap-1 px-2 border-r border-[#00ff88]/20">
+            <button
+              onClick={() => setViewMode('play')}
+              className={`px-3 py-2 rounded text-[#00ff88] font-mono text-xs border transition-all cursor-pointer ${
+                viewMode === 'play' 
+                  ? 'bg-[#00ff88]/30 border-[#00ff88]/50' 
+                  : 'border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50'
+              }`}
+              title="Node Fantasy - Fantasy network view"
+            >
+              Node Fantasy
+            </button>
+            <button
+              onClick={() => setViewMode('play+')}
+              className={`px-3 py-2 rounded text-[#00ff88] font-mono text-xs border transition-all cursor-pointer ${
+                viewMode === 'play+' 
+                  ? 'bg-[#00ff88]/30 border-[#00ff88]/50' 
+                  : 'border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50'
+              }`}
+              title="Lightning Fantasy - Enhanced fantasy with Lightning Network routing"
+            >
+              Lightning Fantasy
+            </button>
+          </div>
+          
+          {/* Energy Use */}
+          <div className="flex gap-1 pl-2">
+            <button
+              onClick={() => setViewMode('energy')}
+              className={`px-3 py-2 rounded text-[#00ff88] font-mono text-xs border transition-all cursor-pointer ${
+                viewMode === 'energy' 
+                  ? 'bg-[#00ff88]/30 border-[#00ff88]/50' 
+                  : 'border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50'
+              }`}
+              title="Energy consumption comparison"
+            >
+              Energy Use
+            </button>
+          </div>
         </div>
-        
-        {/* Fantasy Group */}
-        <div className="flex gap-1 px-2 md:px-2 px-0 border-r-0 md:border-r border-[#00ff88]/20">
-          <button
-            onClick={() => setViewMode('play')}
-            className={`px-3 py-2 rounded text-[#00ff88] font-mono text-xs border transition-all cursor-pointer ${
-              viewMode === 'play' 
-                ? 'bg-[#00ff88]/30 border-[#00ff88]/50' 
-                : 'border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50'
-            }`}
-            title="Node Fantasy - Fantasy network view"
-          >
-            Node Fantasy
-          </button>
-          <button
-            onClick={() => setViewMode('play+')}
-            className={`px-3 py-2 rounded text-[#00ff88] font-mono text-xs border transition-all cursor-pointer ${
-              viewMode === 'play+' 
-                ? 'bg-[#00ff88]/30 border-[#00ff88]/50' 
-                : 'border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50'
-            }`}
-            title="Lightning Fantasy - Enhanced fantasy with Lightning Network routing"
-          >
-            Lightning Fantasy
-          </button>
-        </div>
-        
-        {/* Energy Use */}
-        <div className="flex gap-1 pl-2 md:pl-2 pl-0">
-          <button
-            onClick={() => setViewMode('energy')}
-            className={`px-3 py-2 rounded text-[#00ff88] font-mono text-xs border transition-all cursor-pointer ${
-              viewMode === 'energy' 
-                ? 'bg-[#00ff88]/30 border-[#00ff88]/50' 
-                : 'border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50'
-            }`}
-            title="Energy consumption comparison"
-          >
-            Energy Use
-          </button>
-        </div>
-      </div>
+      )}
 
       {viewMode === 'energy' ? (
         <EnergyUseVisualization />
@@ -1376,7 +1463,7 @@ export default function BlockchainVisualizer() {
       </Canvas>
 
       {/* FULL LEFT SIDE Mining Pool Information Panel - Collapsible on Mobile */}
-      <div className={`absolute top-0 left-0 ${isMobile ? 'w-full z-50' : 'w-96'} ${isLegendOpen ? 'h-full' : 'h-auto'} bg-black/95 backdrop-blur-md ${isMobile ? 'p-2' : 'p-3'} text-white font-mono text-xs border-r border-blue-500/30 ${isLegendOpen ? 'overflow-y-auto' : 'overflow-hidden'} transition-all duration-300`}>
+      <div className={`absolute ${isMobile ? 'bottom-0' : 'top-0'} left-0 ${isMobile ? 'w-full z-40' : 'w-96'} ${isLegendOpen ? (isMobile ? 'h-2/3' : 'h-full') : 'h-auto'} bg-black/95 backdrop-blur-md ${isMobile ? 'p-2 rounded-t-lg' : 'p-3'} text-white font-mono text-xs ${isMobile ? 'border-t' : 'border-r'} border-blue-500/30 ${isLegendOpen ? 'overflow-y-auto' : 'overflow-hidden'} transition-all duration-300`}>
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-blue-400 font-bold flex items-center gap-2 text-sm">
             ⛏️ {viewMode === 'single' || viewMode === 'single+' ? 'BSV NODE NETWORK' : viewMode === 'play' || viewMode === 'play+' ? 'FANTASY NETWORK' : 'BTC MINING POOLS'}
@@ -1585,8 +1672,8 @@ export default function BlockchainVisualizer() {
         )}
       </div>
 
-      {/* Control Buttons - Moved higher */}
-      <div className="absolute bottom-20 right-4 bg-black/90 backdrop-blur-md p-2 rounded-lg border border-[#00ff88]/30 space-y-2">
+      {/* Control Buttons - Responsive positioning */}
+      <div className={`absolute ${isMobile ? 'bottom-4' : 'bottom-20'} right-4 bg-black/90 backdrop-blur-md p-2 rounded-lg border border-[#00ff88]/30 space-y-2`}>
         <button
           onClick={() => {
             // Zoom out to show whole scene from side (90 degree horizontal angle)
@@ -1620,13 +1707,15 @@ export default function BlockchainVisualizer() {
         </button>
       </div>
 
-      {/* Simple Controls Info - Top Right */}
-      <div className="absolute top-4 right-4 bg-black/90 backdrop-blur-md px-3 py-2 rounded-lg text-[#00ff88] font-mono text-xs border border-[#00ff88]/30">
-        <div className="space-y-1">
-          <div>🖱️ Drag: Rotate</div>
-          <div>⚙️ Scroll: Zoom</div>
+      {/* Simple Controls Info - Hidden on mobile */}
+      {!isMobile && (
+        <div className="absolute top-4 right-4 bg-black/90 backdrop-blur-md px-3 py-2 rounded-lg text-[#00ff88] font-mono text-xs border border-[#00ff88]/30">
+          <div className="space-y-1">
+            <div>🖱️ Drag: Rotate</div>
+            <div>⚙️ Scroll: Zoom</div>
+          </div>
         </div>
-      </div>
+      )}
 
         </div>
       )}

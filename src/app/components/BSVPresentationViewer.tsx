@@ -568,6 +568,13 @@ export default function BSVPresentationViewer() {
         >
           🏠 Reset View
         </button>
+        <a
+          href="/3 BSV Presentation .pdf"
+          download="BSV Presentation.pdf"
+          className="block w-full px-3 py-2 rounded text-[#00ff88] font-mono text-xs border border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50 transition-all cursor-pointer text-center"
+        >
+          📥 Download PDF
+        </a>
       </div>
       
       {/* Keyboard Instructions */}
