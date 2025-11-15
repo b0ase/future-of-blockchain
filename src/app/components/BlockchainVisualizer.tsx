@@ -11,6 +11,194 @@ import EnergyUseVisualization from './EnergyUseVisualization'
 
 
 
+function MandalaNetwork({ viewMode }: { viewMode: string }) {
+  const groupRef = useRef<THREE.Group>(null)
+  
+  useFrame((state) => {
+    if (groupRef.current) {
+      // Clockwise rotation synced with pie chart (negative value)
+      groupRef.current.rotation.y -= 0.002
+    }
+  })
+  
+  // Create mandala pattern
+  const elements = []
+  const radius = 35 // Outer radius - match the lower hemisphere size
+  
+  // Get the actual mining pool colors from the pie chart
+  // BSV pools for single/single+ modes
+  const bsvPools = [
+    { name: 'TAAL', percentage: 35.0, color: '#FF0000' },
+    { name: 'QDLink', percentage: 25.0, color: '#FF3300' },
+    { name: 'CQUVE', percentage: 12.0, color: '#FF6600' },
+    { name: 'Mining Dutch', percentage: 8.0, color: '#FF9900' },
+    { name: 'GorillaPool', percentage: 6.0, color: '#FFCC00' },
+    { name: 'Unknown', percentage: 5.0, color: '#FFFF00' },
+    { name: 'ViaBTC', percentage: 3.0, color: '#CCFF00' },
+    { name: 'EMPool', percentage: 2.5, color: '#99FF00' },
+    { name: 'MARAPool', percentage: 1.5, color: '#66FF00' },
+    { name: 'MI Crypto', percentage: 1.0, color: '#33FF00' },
+    { name: 'Solo Miners', percentage: 0.5, color: '#00FF00' },
+    { name: 'Others', percentage: 0.5, color: '#00FF33' }
+  ]
+  
+  // BTC pools for other modes - larger variety
+  const btcPools = [
+    { name: 'AntPool', percentage: 18.5, color: '#FF0000' },
+    { name: 'Poolin', percentage: 15.2, color: '#FF3300' },
+    { name: 'BTC.com', percentage: 12.8, color: '#FF6600' },
+    { name: 'F2Pool', percentage: 10.3, color: '#FF9900' },
+    { name: 'Binance', percentage: 8.9, color: '#FFCC00' },
+    { name: 'Foundry USA', percentage: 6.0, color: '#FFFF00' },
+    { name: 'ViaBTC', percentage: 4.5, color: '#CCFF00' },
+    { name: 'Braiins', percentage: 3.5, color: '#99FF00' },
+    { name: 'Luxor', percentage: 2.8, color: '#66FF00' },
+    { name: 'SBI Crypto', percentage: 2.2, color: '#33FF00' },
+    { name: 'BitFury', percentage: 2.5, color: '#00FF00' },
+    { name: 'Kano CKPool', percentage: 2.0, color: '#00FF33' },
+    { name: 'SpiderPool', percentage: 1.8, color: '#00FF66' },
+    { name: 'Huobi Pool', percentage: 1.5, color: '#00FF99' },
+    { name: 'OKEx Pool', percentage: 1.3, color: '#00FFCC' },
+    { name: 'BTC.TOP', percentage: 1.2, color: '#00FFFF' },
+    { name: '58COIN', percentage: 1.0, color: '#00CCFF' },
+    { name: 'YourPool', percentage: 0.8, color: '#0099FF' },
+    { name: 'BitClub', percentage: 0.7, color: '#0066FF' },
+    { name: 'BTCC', percentage: 0.6, color: '#0033FF' },
+    { name: 'HashNest', percentage: 0.5, color: '#0000FF' },
+    { name: 'Tiny Pools', percentage: 1.4, color: '#3300FF' }
+  ]
+  
+  const miningPools = (viewMode === 'single' || viewMode === 'single+') ? bsvPools : btcPools
+  
+  // Create chaotic mesh network on hemisphere surface
+  const meshNodes = []
+  const meshConnections = []
+  
+  // Generate random nodes across hemisphere
+  const numNodes = 120 // Total number of nodes
+  
+  for (let i = 0; i < numNodes; i++) {
+    // Random spherical coordinates
+    const theta = Math.random() * Math.PI * 2 // Random angle around hemisphere
+    const phi = Math.random() * Math.PI / 2 // Random angle from center to edge
+    
+    // Convert to cartesian coordinates on hemisphere (keep proper hemisphere shape)
+    const r = radius * Math.sin(phi) // Distance from center axis
+    const x = Math.cos(theta) * r
+    const z = Math.sin(theta) * r
+    const y = -24 + Math.sqrt(Math.max(0, radius * radius - r * r)) * 0.9 // Proper hemisphere equation
+    
+    // Determine color based on angular position (match mining pools)
+    let nodeColor = '#FFFFFF'
+    let cumulativeAngle = Math.PI // Start position to match pie chart
+    
+    for (const pool of miningPools) {
+      const segmentAngle = (pool.percentage / 100) * Math.PI * 2
+      const poolEndAngle = cumulativeAngle + segmentAngle
+      
+      const normalizedTheta = ((theta + Math.PI) % (Math.PI * 2))
+      const normalizedCumulative = ((cumulativeAngle + Math.PI) % (Math.PI * 2))
+      const normalizedPoolEnd = ((poolEndAngle + Math.PI) % (Math.PI * 2))
+      
+      if (normalizedTheta >= normalizedCumulative && normalizedTheta <= normalizedPoolEnd) {
+        nodeColor = pool.color
+        break
+      }
+      cumulativeAngle = poolEndAngle
+    }
+    
+    meshNodes.push({
+      position: [x, y, z],
+      color: nodeColor,
+      index: i
+    })
+  }
+  
+  // Create chaotic connections between nearby nodes
+  meshNodes.forEach((node, nodeIndex) => {
+    const maxConnections = 3 + Math.floor(Math.random() * 4) // 3-6 connections per node
+    const connectionDistance = 8 + Math.random() * 6 // Variable connection distance
+    let connections = 0
+    
+    // Find nearby nodes and create random connections
+    const nearbyNodes = meshNodes
+      .filter((otherNode, otherIndex) => otherIndex !== nodeIndex)
+      .map(otherNode => ({
+        node: otherNode,
+        distance: Math.sqrt(
+          Math.pow(node.position[0] - otherNode.position[0], 2) +
+          Math.pow(node.position[1] - otherNode.position[1], 2) +
+          Math.pow(node.position[2] - otherNode.position[2], 2)
+        )
+      }))
+      .filter(({ distance }) => distance < connectionDistance)
+      .sort((a, b) => a.distance - b.distance)
+    
+    // Randomly connect to some nearby nodes
+    nearbyNodes.forEach(({ node: nearbyNode }) => {
+      if (connections < maxConnections && Math.random() > 0.4) { // 60% chance of connection
+        meshConnections.push({
+          start: node.position,
+          end: nearbyNode.position,
+          color: node.color
+        })
+        connections++
+      }
+    })
+  })
+  
+  // Add mesh nodes to elements
+  meshNodes.forEach((node, index) => {
+    elements.push(
+      <mesh key={`mesh-node-${index}`} position={node.position}>
+        <sphereGeometry args={[0.2, 8, 8]} />
+        <meshBasicMaterial color={node.color} opacity={0.8} transparent />
+      </mesh>
+    )
+  })
+  
+  // Add mesh connections to elements
+  meshConnections.forEach((connection, index) => {
+    elements.push(
+      <Line
+        key={`mesh-connection-${index}`}
+        points={[connection.start, connection.end]}
+        color={connection.color}
+        lineWidth={1}
+        opacity={0.4}
+        transparent
+      />
+    )
+  })
+  
+  // Removed central nodes - keeping the mandala pattern clean
+  
+  // Add connecting circles following hemisphere curvature
+  for (let r = 1; r <= 3; r++) {
+    const ringRadius = (radius / 3) * r
+    elements.push(
+      <Line
+        key={`ring-${r}`}
+        points={Array.from({ length: 65 }, (_, i) => {
+          const angle = (i / 64) * Math.PI * 2
+          const x = Math.cos(angle) * ringRadius
+          const z = Math.sin(angle) * ringRadius
+          // Calculate Y based on hemisphere equation (slightly flattened)
+          const distFromCenter = Math.sqrt(x * x + z * z)
+          const y = -24 + Math.sqrt(Math.max(0, radius * radius - distFromCenter * distFromCenter)) * 0.9
+          return [x, y, z]
+        })}
+        color="#FFFFFF"
+        lineWidth={1}
+        opacity={0.3}
+        transparent
+      />
+    )
+  }
+  
+  return <group ref={groupRef}>{elements}</group>
+}
+
 function MiningPoolPieChart({ viewMode }: { viewMode: string }) {
   const chartRef = useRef<THREE.Group>(null!)
   const mainGroupRef = useRef<THREE.Group>(null!)
@@ -1423,6 +1611,7 @@ export default function BlockchainVisualizer() {
               gl.domElement.tabIndex = -1;
             }}
           >
+            <MandalaNetwork viewMode={viewMode} />
             <MiningPoolPieChart viewMode={viewMode} />
             {viewMode === 'single' && <BlockchainBlocks viewMode={viewMode} />}
             {viewMode === 'multi' && <BlockchainBlocks viewMode={viewMode} />}
