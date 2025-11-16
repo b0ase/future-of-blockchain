@@ -1615,7 +1615,7 @@ export default function BlockchainVisualizer() {
   }
   
   const [viewMode, setViewMode] = React.useState<'single' | 'multi' | 'play' | 'single+' | 'multi+' | 'play+' | 'energy'>(getInitialViewMode())
-  const [meshOverlayEnabled, setMeshOverlayEnabled] = useState(false)
+  const [meshOverlayEnabled, setMeshOverlayEnabled] = useState(true)
   const [meshAnimationEnabled, setMeshAnimationEnabled] = useState(true)
   const [bsvMiningPools, setBsvMiningPools] = useState<MiningPool[]>(fallbackBSVPools)
   const [isLoadingPools, setIsLoadingPools] = useState(false)
