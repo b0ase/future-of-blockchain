@@ -11,13 +11,108 @@ import EnergyUseVisualization from './EnergyUseVisualization'
 
 
 
-function MandalaNetwork({ viewMode }: { viewMode: string }) {
+function MandalaNetwork({ viewMode, meshOverlayEnabled, meshAnimationEnabled }: { viewMode: string, meshOverlayEnabled: boolean, meshAnimationEnabled: boolean }) {
   const groupRef = useRef<THREE.Group>(null)
+  const [activeNodes, setActiveNodes] = useState<Set<number>>(new Set())
+  const [activeTransactions, setActiveTransactions] = useState<any[]>([])
+  const [pulseEffects, setPulseEffects] = useState<any[]>([])
   
   useFrame((state) => {
     if (groupRef.current) {
       // Clockwise rotation synced with pie chart (negative value)
       groupRef.current.rotation.y -= 0.002
+    }
+    
+    // Add transaction pings when mesh overlay AND animation are both enabled
+    if (meshOverlayEnabled && meshAnimationEnabled) {
+      const currentTime = state.clock.elapsedTime * 1000
+      
+      // Slower transaction spawning for more measured animation
+      if (Math.random() < 0.004) { // ~0.4% chance (reduced activity)
+        const senderIdx = Math.floor(Math.random() * meshNodes.length)
+        const receiverIdx = Math.floor(Math.random() * meshNodes.length)
+        
+        if (senderIdx !== receiverIdx) {
+          const newTx = {
+            id: Math.random(),
+            sender: senderIdx,
+            receiver: receiverIdx,
+            startTime: currentTime,
+            duration: 4000 + Math.random() * 3000, // 4-7 seconds (slower, more deliberate)
+            progress: 0
+          }
+          
+          setActiveTransactions(prev => [...prev, newTx])
+          setActiveNodes(prev => new Set([...prev, senderIdx]))
+          
+          // Add pulse effect
+          setPulseEffects(prev => [...prev, {
+            id: Math.random(),
+            nodeIndex: senderIdx,
+            startTime: currentTime,
+            color: '#00ffaa'
+          }])
+        }
+      }
+      
+      // Update transaction progress
+      setActiveTransactions(prev => {
+        return prev.filter(tx => {
+          const elapsed = currentTime - tx.startTime
+          tx.progress = Math.min(elapsed / tx.duration, 1)
+          
+          // When transaction completes, light up receiver
+          if (tx.progress >= 1) {
+            setActiveNodes(prev => new Set([...prev, tx.receiver]))
+            setPulseEffects(prev => [...prev, {
+              id: Math.random(),
+              nodeIndex: tx.receiver,
+              startTime: currentTime,
+              color: '#00aaff'
+            }])
+            
+            // Chain reaction: receiving nodes have lower chance to send new transactions
+            if (Math.random() < 0.15) { // 15% chance for chain reaction
+              const chainReceiver = Math.floor(Math.random() * meshNodes.length)
+              if (chainReceiver !== tx.receiver) {
+                const chainTx = {
+                  id: Math.random(),
+                  sender: tx.receiver,
+                  receiver: chainReceiver,
+                  startTime: currentTime + 1200, // Longer delay for chain reaction
+                  duration: 4000 + Math.random() * 3000,
+                  progress: 0
+                }
+                setActiveTransactions(prev => [...prev, chainTx])
+              }
+            }
+            return false
+          }
+          return true
+        })
+      })
+      
+      // Clean up pulse effects (longer duration for more visual impact)
+      setPulseEffects(prev => {
+        return prev.filter(pulse => {
+          const elapsed = currentTime - pulse.startTime
+          return elapsed < 3000 // Increased from 2000 to 3000ms for longer pulses
+        })
+      })
+      
+      // More frequent node turnover for dynamic activity
+      if (Math.random() < 0.005) {
+        setActiveNodes(prev => {
+          const nodes = Array.from(prev)
+          if (nodes.length > 1) {
+            const newSet = new Set(nodes)
+            const nodeToRemove = nodes[Math.floor(Math.random() * nodes.length)]
+            newSet.delete(nodeToRemove)
+            return newSet
+          }
+          return prev
+        })
+      }
     }
   })
   
@@ -147,54 +242,221 @@ function MandalaNetwork({ viewMode }: { viewMode: string }) {
     })
   })
   
-  // Add mesh nodes to elements
-  meshNodes.forEach((node, index) => {
-    elements.push(
-      <mesh key={`mesh-node-${index}`} position={node.position}>
-        <sphereGeometry args={[0.2, 8, 8]} />
-        <meshBasicMaterial color={node.color} opacity={0.8} transparent />
-      </mesh>
-    )
-  })
+  // Only add mesh nodes and connections when mesh overlay is enabled
+  if (meshOverlayEnabled) {
+    // Add mesh nodes to elements
+    meshNodes.forEach((node, index) => {
+      elements.push(
+        <mesh key={`mesh-node-${index}`} position={node.position}>
+          <sphereGeometry args={[0.2, 8, 8]} />
+          <meshBasicMaterial color={node.color} opacity={0.8} transparent />
+        </mesh>
+      )
+    })
+    
+    // Add mesh connections to elements
+    meshConnections.forEach((connection, index) => {
+      elements.push(
+        <Line
+          key={`mesh-connection-${index}`}
+          points={[connection.start, connection.end]}
+          color={connection.color}
+          lineWidth={1}
+          opacity={0.4}
+          transparent
+        />
+      )
+    })
+  }
   
-  // Add mesh connections to elements
-  meshConnections.forEach((connection, index) => {
-    elements.push(
-      <Line
-        key={`mesh-connection-${index}`}
-        points={[connection.start, connection.end]}
-        color={connection.color}
-        lineWidth={1}
-        opacity={0.4}
-        transparent
-      />
-    )
-  })
+  // Add transaction visualizations when mesh overlay AND animation are both enabled
+  if (meshOverlayEnabled && meshAnimationEnabled) {
+    // Enhanced active nodes with sophisticated lighting
+    Array.from(activeNodes).forEach(nodeIdx => {
+      const node = meshNodes[nodeIdx]
+      if (node) {
+        elements.push(
+          <group key={`active-node-${nodeIdx}`}>
+            {/* Core bright point */}
+            <mesh position={node.position}>
+              <sphereGeometry args={[0.15, 8, 8]} />
+              <meshBasicMaterial 
+                color="#ffffff"
+                opacity={1}
+              />
+            </mesh>
+            
+            {/* Inner energy ring */}
+            <mesh position={node.position}>
+              <sphereGeometry args={[0.4, 16, 16]} />
+              <meshBasicMaterial 
+                color="#00ffaa"
+                transparent
+                opacity={0.8}
+              />
+            </mesh>
+            
+            {/* Outer glow field */}
+            <mesh position={node.position}>
+              <sphereGeometry args={[1.2, 12, 12]} />
+              <meshBasicMaterial 
+                color="#00ffaa"
+                transparent
+                opacity={0.15}
+              />
+            </mesh>
+            
+            {/* Distant aura */}
+            <mesh position={node.position}>
+              <sphereGeometry args={[2.0, 8, 8]} />
+              <meshBasicMaterial 
+                color="#66ffcc"
+                transparent
+                opacity={0.05}
+              />
+            </mesh>
+          </group>
+        )
+      }
+    })
+    
+    // Active transaction pings
+    activeTransactions.forEach(tx => {
+      const sender = meshNodes[tx.sender]
+      const receiver = meshNodes[tx.receiver]
+      
+      if (sender && receiver) {
+        const senderPos = sender.position
+        const receiverPos = receiver.position
+        
+        const currentPos = [
+          senderPos[0] + (receiverPos[0] - senderPos[0]) * tx.progress,
+          senderPos[1] + (receiverPos[1] - senderPos[1]) * tx.progress,
+          senderPos[2] + (receiverPos[2] - senderPos[2]) * tx.progress
+        ]
+        
+        elements.push(
+          <group key={`tx-${tx.id}`}>
+            {/* Transaction path with energy trail */}
+            <Line
+              points={[senderPos, receiverPos]}
+              color="#00ccff"
+              lineWidth={2}
+              opacity={0.6}
+              transparent
+            />
+            
+            {/* Energy trail behind ping */}
+            <Line
+              points={[
+                [
+                  senderPos[0] + (receiverPos[0] - senderPos[0]) * Math.max(0, tx.progress - 0.1),
+                  senderPos[1] + (receiverPos[1] - senderPos[1]) * Math.max(0, tx.progress - 0.1),
+                  senderPos[2] + (receiverPos[2] - senderPos[2]) * Math.max(0, tx.progress - 0.1)
+                ],
+                currentPos
+              ]}
+              color="#66ddff"
+              lineWidth={4}
+              opacity={0.9}
+              transparent
+            />
+            
+            {/* Core moving ping */}
+            <mesh position={currentPos}>
+              <sphereGeometry args={[0.15, 12, 12]} />
+              <meshBasicMaterial 
+                color="#ffffff"
+              />
+            </mesh>
+            
+            {/* Inner energy sphere */}
+            <mesh position={currentPos}>
+              <sphereGeometry args={[0.4, 12, 12]} />
+              <meshBasicMaterial 
+                color="#00ccff"
+                transparent
+                opacity={0.8}
+              />
+            </mesh>
+            
+            {/* Outer light field */}
+            <mesh position={currentPos}>
+              <sphereGeometry args={[0.8, 8, 8]} />
+              <meshBasicMaterial 
+                color="#66ddff"
+                transparent
+                opacity={0.3}
+              />
+            </mesh>
+            
+            {/* Energy sparkles */}
+            <mesh position={currentPos}>
+              <sphereGeometry args={[1.2, 6, 6]} />
+              <meshBasicMaterial 
+                color="#aaeeff"
+                transparent
+                opacity={0.1}
+              />
+            </mesh>
+          </group>
+        )
+      }
+    })
+    
+    // Pulse effects
+    pulseEffects.forEach(pulse => {
+      const node = meshNodes[pulse.nodeIndex]
+      if (node) {
+        const elapsed = Date.now() - pulse.startTime
+        const progress = elapsed / 3000 // Updated to match longer pulse duration
+        const radius = progress * 12 // Larger radius for more dramatic effect
+        const opacity = Math.max(0, 0.6 - progress) // Higher initial opacity
+        
+        if (progress < 1) {
+          elements.push(
+            <group key={`pulse-${pulse.id}`}>
+              {/* Inner pulse ring */}
+              <mesh position={node.position}>
+                <sphereGeometry args={[radius * 0.6, 16, 16]} />
+                <meshBasicMaterial 
+                  color="#ffffff"
+                  transparent
+                  opacity={opacity * 0.8}
+                  wireframe
+                />
+              </mesh>
+              
+              {/* Main pulse ring */}
+              <mesh position={node.position}>
+                <sphereGeometry args={[radius, 12, 12]} />
+                <meshBasicMaterial 
+                  color={pulse.color}
+                  transparent
+                  opacity={opacity}
+                  wireframe
+                />
+              </mesh>
+              
+              {/* Outer energy field */}
+              <mesh position={node.position}>
+                <sphereGeometry args={[radius * 1.5, 8, 8]} />
+                <meshBasicMaterial 
+                  color="#66ffcc"
+                  transparent
+                  opacity={opacity * 0.3}
+                />
+              </mesh>
+            </group>
+          )
+        }
+      }
+    })
+  }
   
   // Removed central nodes - keeping the mandala pattern clean
   
-  // Add connecting circles following hemisphere curvature
-  for (let r = 1; r <= 3; r++) {
-    const ringRadius = (radius / 3) * r
-    elements.push(
-      <Line
-        key={`ring-${r}`}
-        points={Array.from({ length: 65 }, (_, i) => {
-          const angle = (i / 64) * Math.PI * 2
-          const x = Math.cos(angle) * ringRadius
-          const z = Math.sin(angle) * ringRadius
-          // Calculate Y based on hemisphere equation (slightly flattened)
-          const distFromCenter = Math.sqrt(x * x + z * z)
-          const y = -24 + Math.sqrt(Math.max(0, radius * radius - distFromCenter * distFromCenter)) * 0.9
-          return [x, y, z]
-        })}
-        color="#FFFFFF"
-        lineWidth={1}
-        opacity={0.3}
-        transparent
-      />
-    )
-  }
+  // Removed connecting circles - artifacts from previous implementation
   
   return <group ref={groupRef}>{elements}</group>
 }
@@ -868,6 +1130,7 @@ function AnimatedCentralChain() {
   )
 }
 
+
 function LightningNetworkRouting() {
   const [pathSegments, setPathSegments] = useState<any[]>([])
   const [currentStep, setCurrentStep] = useState(0)
@@ -1350,6 +1613,8 @@ export default function BlockchainVisualizer() {
   }
   
   const [viewMode, setViewMode] = React.useState<'single' | 'multi' | 'play' | 'single+' | 'multi+' | 'play+' | 'energy'>(getInitialViewMode())
+  const [meshOverlayEnabled, setMeshOverlayEnabled] = useState(false)
+  const [meshAnimationEnabled, setMeshAnimationEnabled] = useState(false)
   const [bsvMiningPools, setBsvMiningPools] = useState<MiningPool[]>(fallbackBSVPools)
   const [isLoadingPools, setIsLoadingPools] = useState(false)
   const [animationKey, setAnimationKey] = useState(0) // Key to force re-render animations
@@ -1611,7 +1876,7 @@ export default function BlockchainVisualizer() {
               gl.domElement.tabIndex = -1;
             }}
           >
-            <MandalaNetwork viewMode={viewMode} />
+            <MandalaNetwork viewMode={viewMode} meshOverlayEnabled={meshOverlayEnabled} meshAnimationEnabled={meshAnimationEnabled} />
             <MiningPoolPieChart viewMode={viewMode} />
             {viewMode === 'single' && <BlockchainBlocks viewMode={viewMode} />}
             {viewMode === 'multi' && <BlockchainBlocks viewMode={viewMode} />}
@@ -1655,7 +1920,10 @@ export default function BlockchainVisualizer() {
       <div className={`absolute ${isMobile ? 'bottom-0' : 'top-0'} left-0 ${isMobile ? 'w-full z-40' : 'w-96'} ${isLegendOpen ? (isMobile ? 'h-2/3' : 'h-full') : 'h-auto'} bg-black/95 backdrop-blur-md ${isMobile ? 'p-2 rounded-t-lg' : 'p-3'} text-white font-mono text-xs ${isMobile ? 'border-t' : 'border-r'} border-blue-500/30 ${isLegendOpen ? 'overflow-y-auto' : 'overflow-hidden'} transition-all duration-300`}>
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-blue-400 font-bold flex items-center gap-2 text-sm">
-            ⛏️ {viewMode === 'single' || viewMode === 'single+' ? 'BSV NODE NETWORK' : viewMode === 'play' || viewMode === 'play+' ? 'FANTASY NETWORK' : 'BTC MINING POOLS'}
+            {meshOverlayEnabled ? 
+              (meshAnimationEnabled ? '🌐⚡ MESH ANIMATING' : '🌐 MESH OVERLAY ACTIVE') : 
+             `⛏️ ${viewMode === 'single' || viewMode === 'single+' ? 'BSV NODE NETWORK' : 
+                   viewMode === 'play' || viewMode === 'play+' ? 'FANTASY NETWORK' : 'BTC MINING POOLS'}`}
           </h3>
           {isMobile && (
             <button
@@ -1671,15 +1939,83 @@ export default function BlockchainVisualizer() {
         {/* Content - Only show when open */}
         {isLegendOpen && (
           <>
-            {/* Total Hash Rate */}
-            <div className="mb-3 p-2 bg-blue-900/30 rounded border border-blue-500/20">
-          <div className="text-cyan-400 font-bold text-sm">🌐 TOTAL NETWORK</div>
-          <div className="text-yellow-400 text-lg font-bold">{viewMode === 'single' || viewMode === 'single+' ? '~0.6 EH/s' : viewMode === 'play' || viewMode === 'play+' ? 'DISTRIBUTED' : '~680 EH/s'}</div>
-        </div>
+            {meshOverlayEnabled ? (
+              /* Mesh Network Info */
+              <>
+                <div className="mb-3 p-2 bg-green-900/30 rounded border border-green-500/20">
+                  <div className="text-green-400 font-bold text-sm">🌐 DYNAMIC PAYMENT NETWORK</div>
+                  <div className="text-yellow-400 text-lg font-bold">
+                    {meshAnimationEnabled ? 'Live Transaction Flow' : 'Network Overlay (Static)'}
+                  </div>
+                  {!meshAnimationEnabled && (
+                    <div className="text-orange-400 text-xs mt-1">
+                      Click "⚡ Start Animation" to see live transactions
+                    </div>
+                  )}
+                </div>
+                
+                <div className="space-y-3">
+                  <div className="p-3 rounded bg-gradient-to-r from-green-900/30 to-green-800/30 border border-green-500/20">
+                    <div className="text-green-400 font-bold mb-2">🟢 Network Participants</div>
+                    <div className="space-y-1 text-xs">
+                      <div className="flex justify-between">
+                        <span style={{ color: '#00ff88' }}>👤 Users:</span>
+                        <span className="text-white">Payment Senders</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span style={{ color: '#ff6600' }}>🏪 Shops:</span>
+                        <span className="text-white">Merchants & Services</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span style={{ color: '#0066ff' }}>🏦 Banks:</span>
+                        <span className="text-white">Financial Institutions</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span style={{ color: '#ff00ff' }}>💱 Exchanges:</span>
+                        <span className="text-white">Trading Platforms</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="p-3 rounded bg-gradient-to-r from-blue-900/30 to-blue-800/30 border border-blue-500/20">
+                    <div className="text-blue-400 font-bold mb-2">⚡ Transaction Types</div>
+                    <div className="space-y-1 text-xs">
+                      <div className="flex justify-between">
+                        <span style={{ color: '#00ffaa' }}>💰 Regular:</span>
+                        <span className="text-white">P2P Payments</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span style={{ color: '#ffaa00' }}>🔄 Relays:</span>
+                        <span className="text-white">Shop → Bank Settlements</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="p-3 rounded bg-gradient-to-r from-purple-900/30 to-purple-800/30 border border-purple-500/20">
+                    <div className="text-purple-400 font-bold mb-2">✨ Visual Effects</div>
+                    <div className="space-y-1 text-xs">
+                      <div className="text-white">• Nodes appear when sending/receiving</div>
+                      <div className="text-white">• Pulse waves on transaction activity</div>
+                      <div className="text-white">• Nodes fade after inactivity</div>
+                      <div className="text-white">• Real-time payment routing</div>
+                    </div>
+                  </div>
+                </div>
+              </>
+            ) : (
+              /* Original Mining Pool Info */
+              <>
+                <div className="mb-3 p-2 bg-blue-900/30 rounded border border-blue-500/20">
+                  <div className="text-cyan-400 font-bold text-sm">🌐 TOTAL NETWORK</div>
+                  <div className="text-yellow-400 text-lg font-bold">{viewMode === 'single' || viewMode === 'single+' ? '~0.6 EH/s' : viewMode === 'play' || viewMode === 'play+' ? 'DISTRIBUTED' : '~680 EH/s'}</div>
+                </div>
+              </>
+            )}
 
-        {/* All Pools - sized proportionally with harmonious colors */}
-        <div className="space-y-1">
-          {viewMode === 'single' || viewMode === 'single+' ? (
+        {/* All Pools - sized proportionally with harmonious colors - Hide when mesh overlay is active */}
+        {!meshOverlayEnabled && (
+          <div className="space-y-1">
+            {viewMode === 'single' || viewMode === 'single+' ? (
             <>
               {/* Dynamic BSV Pools */}
               {isLoadingPools && (
@@ -1856,13 +2192,33 @@ export default function BlockchainVisualizer() {
           </div>
             </>
           )}
-        </div>
+          </div>
+        )}
           </>
         )}
       </div>
 
       {/* Control Buttons - Responsive positioning */}
       <div className={`absolute ${isMobile ? 'bottom-4' : 'bottom-20'} right-4 bg-black/90 backdrop-blur-md p-2 rounded-lg border border-[#00ff88]/30 space-y-2`}>
+        {/* Combined Mesh + Animation Toggle */}
+        <button
+          onClick={() => {
+            const newMeshState = !meshOverlayEnabled
+            setMeshOverlayEnabled(newMeshState)
+            setMeshAnimationEnabled(newMeshState) // Start animation when showing mesh, stop when hiding
+          }}
+          className={`w-full px-3 py-2 rounded text-[#00ff88] font-mono text-xs border transition-all cursor-pointer ${
+            meshOverlayEnabled 
+              ? 'bg-[#00ff88]/30 border-[#00ff88]/50' 
+              : 'border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50'
+          }`}
+          title="Toggle mesh with transaction animations"
+        >
+          🌐 {meshOverlayEnabled ? 'Hide' : 'Show'} Mesh
+        </button>
+        
+        <div className="border-t border-[#00ff88]/20 my-2"></div>
+        
         <button
           onClick={() => {
             // Zoom out to show whole scene from side (90 degree horizontal angle)
@@ -1878,22 +2234,49 @@ export default function BlockchainVisualizer() {
           🔍 Zoom Out
         </button>
         <button
-          onClick={() => {
-            // Restart animation by incrementing the key
-            setAnimationKey(prev => prev + 1);
-          }}
-          className="w-full px-3 py-2 rounded text-[#00ff88] font-mono text-xs border border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50 transition-all cursor-pointer"
-          title="Restart animation"
-        >
-          ⏮️ Restart Animation
-        </button>
-        <button
           onClick={resetView}
           className="w-full px-3 py-2 rounded text-[#00ff88] font-mono text-xs border border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50 transition-all cursor-pointer"
           title="Reset view"
         >
           🔄 Reset View
         </button>
+        
+        {/* Mesh-specific controls when mesh is enabled */}
+        {meshOverlayEnabled && (
+          <>
+            <div className="border-t border-[#00ff88]/20 my-2 pt-2">
+              <div className="text-[#00ff88] font-mono text-xs mb-2 text-center">Mesh Controls</div>
+              <button
+                onClick={() => {
+                  // Focus on mesh network level
+                  if (controlsRef.current) {
+                    controlsRef.current.object.position.set(0, 10, 40);
+                    controlsRef.current.object.lookAt(0, -24, 0);
+                    controlsRef.current.update();
+                  }
+                }}
+                className="w-full px-3 py-2 rounded text-[#00ff88] font-mono text-xs border border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50 transition-all cursor-pointer mb-1"
+                title="Focus on mesh network"
+              >
+                🌐 Focus Mesh
+              </button>
+              <button
+                onClick={() => {
+                  // Top-down view
+                  if (controlsRef.current) {
+                    controlsRef.current.object.position.set(0, 50, 0);
+                    controlsRef.current.object.lookAt(0, -24, 0);
+                    controlsRef.current.update();
+                  }
+                }}
+                className="w-full px-3 py-2 rounded text-[#00ff88] font-mono text-xs border border-[#00ff88]/30 hover:bg-[#00ff88]/20 hover:border-[#00ff88]/50 transition-all cursor-pointer"
+                title="Top-down mesh view"
+              >
+                ⬇️ Top View
+              </button>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Simple Controls Info - Hidden on mobile */}
