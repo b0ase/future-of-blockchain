@@ -28,8 +28,8 @@ function MandalaNetwork({ viewMode, meshOverlayEnabled, meshAnimationEnabled }: 
       const currentTime = state.clock.elapsedTime * 1000
       
       // Dynamic transaction frequency based on blockchain TPS simulation
-      // BSV (1M TPS): 0.004 frequency, BTC (4 TPS): 0.00001 frequency (250x slower)
-      const txFrequency = (viewMode === 'single' || viewMode === 'single+') ? 0.004 : 0.00001
+      // BSV (1M TPS): 0.004 frequency, BTC (4 TPS): 0.000001 frequency (4000x slower)
+      const txFrequency = (viewMode === 'single' || viewMode === 'single+') ? 0.004 : 0.000001
       if (Math.random() < txFrequency) {
         const senderIdx = Math.floor(Math.random() * meshNodes.length)
         const receiverIdx = Math.floor(Math.random() * meshNodes.length)
