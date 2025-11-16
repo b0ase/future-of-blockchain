@@ -27,8 +27,10 @@ function MandalaNetwork({ viewMode, meshOverlayEnabled, meshAnimationEnabled }: 
     if (meshOverlayEnabled && meshAnimationEnabled) {
       const currentTime = state.clock.elapsedTime * 1000
       
-      // Slower transaction spawning for more measured animation
-      if (Math.random() < 0.004) { // ~0.4% chance (reduced activity)
+      // Dynamic transaction frequency based on blockchain TPS simulation
+      // BSV (1M TPS): 0.004 frequency, BTC (4 TPS): 0.00001 frequency (250x slower)
+      const txFrequency = (viewMode === 'single' || viewMode === 'single+') ? 0.004 : 0.00001
+      if (Math.random() < txFrequency) {
         const senderIdx = Math.floor(Math.random() * meshNodes.length)
         const receiverIdx = Math.floor(Math.random() * meshNodes.length)
         
@@ -1614,7 +1616,7 @@ export default function BlockchainVisualizer() {
   
   const [viewMode, setViewMode] = React.useState<'single' | 'multi' | 'play' | 'single+' | 'multi+' | 'play+' | 'energy'>(getInitialViewMode())
   const [meshOverlayEnabled, setMeshOverlayEnabled] = useState(false)
-  const [meshAnimationEnabled, setMeshAnimationEnabled] = useState(false)
+  const [meshAnimationEnabled, setMeshAnimationEnabled] = useState(true)
   const [bsvMiningPools, setBsvMiningPools] = useState<MiningPool[]>(fallbackBSVPools)
   const [isLoadingPools, setIsLoadingPools] = useState(false)
   const [animationKey, setAnimationKey] = useState(0) // Key to force re-render animations
