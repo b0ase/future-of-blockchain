@@ -117,7 +117,7 @@ function MandalaNetwork({ viewMode, meshOverlayEnabled, meshAnimationEnabled }: 
   })
   
   // Create mandala pattern
-  const elements = []
+  const elements: React.ReactElement[] = []
   const radius = 35 // Outer radius - match the lower hemisphere size
   
   // Get the actual mining pool colors from the pie chart
@@ -166,8 +166,8 @@ function MandalaNetwork({ viewMode, meshOverlayEnabled, meshAnimationEnabled }: 
   const miningPools = (viewMode === 'single' || viewMode === 'single+') ? bsvPools : btcPools
   
   // Create chaotic mesh network on hemisphere surface
-  const meshNodes = []
-  const meshConnections = []
+  const meshNodes: any[] = []
+  const meshConnections: any[] = []
   
   // Generate random nodes across hemisphere
   const numNodes = 120 // Total number of nodes
@@ -329,7 +329,7 @@ function MandalaNetwork({ viewMode, meshOverlayEnabled, meshAnimationEnabled }: 
         const senderPos = sender.position
         const receiverPos = receiver.position
         
-        const currentPos = [
+        const currentPos: [number, number, number] = [
           senderPos[0] + (receiverPos[0] - senderPos[0]) * tx.progress,
           senderPos[1] + (receiverPos[1] - senderPos[1]) * tx.progress,
           senderPos[2] + (receiverPos[2] - senderPos[2]) * tx.progress
